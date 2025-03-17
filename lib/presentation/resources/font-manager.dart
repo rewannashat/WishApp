@@ -2,14 +2,12 @@
 import 'dart:ui';
 
 class FontManager {
-  static const String fontFamilyTitle = 'Poly' ;
-  static const String fontFamilyApp = 'Inter';
+  static const String fontFamilyAPP = 'Almarai' ;
 }
 
 class FontWightManager {
   static const FontWeight fontWeightLight = FontWeight.w400;
   static const FontWeight fontWeightRegular = FontWeight.w500;
-  static const FontWeight fontWeightMedium = FontWeight.w600;
   static const FontWeight fontWeightSemiBold = FontWeight.w700;
   static const FontWeight fontWeightBold = FontWeight.w800;
 }

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class ColorsManager {
 
   // special color app :
-  static const Color buttonColor = Color(0xff71CBFF);
+  static const Color buttonColor = Color(0xff7384A4);
   static const Color mainColor = Color(0xffC067C8);
   static const Color backMainColor = Color(0xff41053a);
   static const Color dropedColor = Color(0xffD3CCCC);
@@ -34,6 +34,7 @@ class ColorsManager {
   static const Color iconHelpColor = Color(0xffFFAD00);
   static const Color backIconColor = Color(0xFFF5F6F9);
   static const Color backIconsColor = Color(0xFFFF7643);
+  static const Color transportColor = Color(0xff414040);
 
   // default color in any app :
   static const Color redColor = Color(0xffFF0000);

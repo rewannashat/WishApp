@@ -20,7 +20,7 @@ TextStyle getLightTextStyle({double fontSize = FontSize.s10, required Color colo
   return _getTextStyle(
     fontSize: fontSize,
     fontWeight: FontWightManager.fontWeightLight,
-    fontFamily: FontManager.fontFamilyApp,
+    fontFamily: FontManager.fontFamilyAPP,
     color: color,
   );
 }
@@ -30,27 +30,27 @@ TextStyle getRegularTextStyle({double fontSize = FontSize.s12, required Color co
   return _getTextStyle(
     fontSize: fontSize,
     fontWeight: FontWightManager.fontWeightRegular,
-    fontFamily: FontManager.fontFamilyApp,
+    fontFamily: FontManager.fontFamilyAPP,
     color: color,
   );
 }
 
 // Medium text
-TextStyle getMediumTextStyle({double fontSize = FontSize.s15, required Color color}) {
+/*TextStyle getMediumTextStyle({double fontSize = FontSize.s15, required Color color}) {
   return _getTextStyle(
     fontSize: fontSize,
     fontWeight: FontWightManager.fontWeightMedium,
-    fontFamily: FontManager.fontFamilyTitle,
+    fontFamily: FontManager.fontFamilyAPP,
     color: color,
   );
-}
+}*/
 
 // SemiBold text
 TextStyle getSemiBoldTextStyle({double fontSize = FontSize.s20, required Color color}) {
   return _getTextStyle(
     fontSize: fontSize,
     fontWeight: FontWightManager.fontWeightSemiBold,
-    fontFamily: FontManager.fontFamilyApp,
+    fontFamily: FontManager.fontFamilyAPP,
     color: color,
   );
 }
@@ -60,7 +60,7 @@ TextStyle getBoldTextStyle({double fontSize = FontSize.s30, required Color color
   return _getTextStyle(
     fontSize: fontSize,
     fontWeight: FontWightManager.fontWeightBold,
-    fontFamily: FontManager.fontFamilyApp,
+    fontFamily: FontManager.fontFamilyAPP,
     color: color,
   );
 }
@@ -70,7 +70,7 @@ TextStyle getRegularTitleStyle({double fontSize = FontSize.s20, required Color c
   return _getTextStyle(
     fontSize: fontSize,
     fontWeight: FontWightManager.fontWeightRegular,
-    fontFamily: FontManager.fontFamilyTitle,
+    fontFamily: FontManager.fontFamilyAPP,
     color: color,
   );
 }
