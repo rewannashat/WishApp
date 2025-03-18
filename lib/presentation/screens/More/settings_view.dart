@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:wish/presentation/resources/colors-manager.dart';
 import 'package:wish/presentation/resources/constants/custom-staticwidget.dart';
+import 'package:wish/presentation/screens/More/parentControl_view.dart';
 import 'package:wish/presentation/screens/More/playlists_view.dart';
-import 'package:wish/presentation/screens/More/settings_view.dart';
 
 import '../../resources/styles-manager.dart';
 import '../BottomNav/bottomnavbar_view.dart';
+import 'appInfo_view.dart';
+import 'clearCache_view.dart';
+import 'language_view.dart';
 
-class MoreView extends StatelessWidget {
-  const MoreView({Key? key}) : super(key: key);
+class SettingsView extends StatelessWidget {
+  const SettingsView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +25,7 @@ class MoreView extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('More', style: TextStyle(color: Colors.white)),
+        title: const Text('Settings', style: TextStyle(color: Colors.white)),
         centerTitle: true,
         actions: [
           IconButton(
@@ -49,8 +52,11 @@ class MoreView extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(height: 80.h), // Adjust space for app bar
-            _buildListTile(Icons.playlist_play, "Playlist" , () => NormalNav(ctx: context,screen: PlaylistsView())),
-            _buildListTile(Icons.settings, "Settings" , () => NormalNav(ctx: context,screen: SettingsView())),
+            _buildListTile(Icons.playlist_play, "Language" , () => NormalNav(ctx: context,screen: LanguageView())),
+            _buildListTile(Icons.settings, "Application Info" , () => NormalNav(ctx: context,screen: ApplicationInfoView())),
+            _buildListTile(Icons.settings, "Clear Cache" , () => NormalNav(ctx: context,screen: ClearCacheView())),
+            _buildListTile(Icons.settings, "Parent Control" , () => NormalNav(ctx: context,screen: ParentControlView())),
+
             const Spacer(),
             Align(
               alignment: Alignment.bottomCenter,
@@ -70,7 +76,6 @@ class MoreView extends StatelessWidget {
         GestureDetector(
           onTap:() => click(),
           child: ListTile(
-            leading: Icon(icon, color: Colors.white),
             title: Text(title, style: getLightTextStyle(color: ColorsManager.whiteColor , fontSize: 15.sp)),
           ),
         ),

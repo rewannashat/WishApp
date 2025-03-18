@@ -9,6 +9,7 @@ import 'package:wish/presentation/resources/routes-manager.dart';
 import 'package:wish/presentation/screens/BottomNav/bottomnav_cubit.dart';
 import 'package:wish/presentation/screens/Live/live_view.dart';
 import 'package:wish/presentation/screens/Live/live_viewModel/live_cubit.dart';
+import 'package:wish/presentation/screens/More/more_view.dart';
 import 'package:wish/presentation/screens/Movie/movie_view.dart';
 import 'package:wish/presentation/screens/Movie/movie_viewModel/movie_cubit.dart';
 import 'package:wish/presentation/screens/series/series_view.dart';
@@ -81,7 +82,7 @@ class MyApp extends StatelessWidget {
           Routes.liveScreen: (context) => LiveView(),
           Routes.movieScreen: (context) => MovieView(),
           Routes.seriesScreen: (context) => SeriesView(),
-          Routes.moreScreen: (context) => MovieView(),
+          Routes.moreScreen: (context) => MoreView(),
 
 
         },

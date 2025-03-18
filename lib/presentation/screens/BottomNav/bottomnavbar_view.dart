@@ -16,65 +16,60 @@ class BottomNavBar extends StatelessWidget {
     return BlocBuilder<BottomNavBarCubit,int>(
       builder: (context, state) {
         final cubit = context.read<BottomNavBarCubit>();
-        return Positioned(
-          left: 0,
-          right: 0,
-          bottom:15,
-          child: Container(
-            margin: EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 8,
-                  spreadRadius: 1,
-                  offset: Offset(0, 2),
+        return Container(
+          margin: EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.r),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 8,
+                spreadRadius: 1,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16.r),
+            child: BottomNavigationBar(
+              currentIndex: state,
+              onTap:(index) => cubit.onItemTapped(context, index),
+              backgroundColor: Colors.white,
+              selectedItemColor: Colors.black,
+              unselectedItemColor: Colors.grey,
+              showUnselectedLabels: true,
+              type: BottomNavigationBarType.fixed,
+              items: [
+                BottomNavigationBarItem(
+                  icon: state == 0
+                      ? Container(
+                    padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(8.r),
+                    ),
+                    child: Text(
+                      'Live',
+                      style: TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  )
+                      : Icon(Icons.live_tv),
+                  label: 'Tv Live',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.movie),
+                  label: 'Movie',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.tv),
+                  label: 'Series',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.more_horiz),
+                  label: 'More',
                 ),
               ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16.r),
-              child: BottomNavigationBar(
-                currentIndex: state,
-                onTap:(index) => cubit.onItemTapped(context, index),
-                backgroundColor: Colors.white,
-                selectedItemColor: Colors.black,
-                unselectedItemColor: Colors.grey,
-                showUnselectedLabels: true,
-                type: BottomNavigationBarType.fixed,
-                items: [
-                  BottomNavigationBarItem(
-                    icon: state == 0
-                        ? Container(
-                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: Text(
-                        'Live',
-                        style: TextStyle(color: Colors.white, fontSize: 12),
-                      ),
-                    )
-                        : Icon(Icons.live_tv),
-                    label: 'Tv Live',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.movie),
-                    label: 'Movie',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.tv),
-                    label: 'Series',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.more_horiz),
-                    label: 'More',
-                  ),
-                ],
-              ),
             ),
           ),
         );

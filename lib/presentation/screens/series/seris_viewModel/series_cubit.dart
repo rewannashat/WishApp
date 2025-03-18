@@ -18,10 +18,21 @@ class SeriesCubit extends Cubit<Set<int>> {
   final List<String> categories = ['مسلسلات مصري 2022', 'مسلسلات رمضان 2024', 'مسلسلات رمضان 2025', 'مسلسلات مصري'];
   String selectedCategory = 'مسلسلات مصري 2022';
 
+
+
   void changeCategory(String newCategory) {
     selectedCategory = newCategory;
     emit(Set.from(state));
   }
 
+
+  //== Category Details LOGIC ==//
+  final List<String> categoriesDetails = ['Seasons1', 'Seasons2' , 'Seasons3' , 'Seasons4'];
+  String selectedcategoriesDetails = 'Seasons1';
+
+  void changeCategoryDetails(String newCategory) {
+    selectedcategoriesDetails = newCategory;
+    emit(Set.from(state));
+  }
 
 }
