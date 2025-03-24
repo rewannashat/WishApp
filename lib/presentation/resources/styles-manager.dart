@@ -36,14 +36,14 @@ TextStyle getRegularTextStyle({double fontSize = FontSize.s12, required Color co
 }
 
 // Medium text
-/*TextStyle getMediumTextStyle({double fontSize = FontSize.s15, required Color color}) {
+TextStyle getMediumTextStyle({double fontSize = FontSize.s15, required Color color}) {
   return _getTextStyle(
     fontSize: fontSize,
-    fontWeight: FontWightManager.fontWeightMedium,
-    fontFamily: FontManager.fontFamilyAPP,
+    fontWeight: FontWightManager.fontWeightRegular,
+    fontFamily: FontManager.fontFamAPP,
     color: color,
   );
-}*/
+}
 
 // SemiBold text
 TextStyle getSemiBoldTextStyle({double fontSize = FontSize.s20, required Color color}) {

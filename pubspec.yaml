@@ -43,6 +43,7 @@ dependencies:
   conditional_builder_null_safety: ^0.0.6
   fluttertoast: ^8.2.4
   url_launcher: ^6.3.1
+  device_info_plus:
 
   # Loading Animations
   loading_animation_widget: ^1.2.0+4
@@ -76,4 +77,13 @@ flutter:
           weight: 500
         - asset: assets/fonts/Almarai-Light.ttf
           weight: 400
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto_Condensed-Black.ttf
+          weight: 600
+        - asset: assets/fonts/Roboto_Condensed-Regular.ttf
+          weight: 600
+        - asset: assets/fonts/Roboto_Condensed-Light.ttf
+          weight: 500
+
 

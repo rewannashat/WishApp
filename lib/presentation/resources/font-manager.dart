@@ -3,6 +3,8 @@ import 'dart:ui';
 
 class FontManager {
   static const String fontFamilyAPP = 'Almarai' ;
+  static const String fontFamAPP = 'Roboto' ;
+
 }
 
 class FontWightManager {

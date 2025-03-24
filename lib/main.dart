@@ -10,6 +10,7 @@ import 'package:wish/presentation/screens/BottomNav/bottomnav_cubit.dart';
 import 'package:wish/presentation/screens/BottomNav/bottomnavbar_view.dart';
 import 'package:wish/presentation/screens/Live/live_view.dart';
 import 'package:wish/presentation/screens/Live/live_viewModel/live_cubit.dart';
+import 'package:wish/presentation/screens/Logins/logins_viewModel/login_cubit.dart';
 import 'package:wish/presentation/screens/Logins/splash_view.dart';
 import 'package:wish/presentation/screens/More/more_view.dart';
 import 'package:wish/presentation/screens/Movie/movie_view.dart';
@@ -63,6 +64,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => SeriesCubit(),
+        ),
+        BlocProvider(
+          create: (context) => LoginCubit()..fetchDeviceData(),
         ),
       ],
       child: MaterialApp(

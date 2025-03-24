@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:wish/presentation/resources/font-manager.dart';
 
 import '../colors-manager.dart';
 
@@ -67,12 +68,13 @@ Widget rowDiv (double width) {
       ),
       SizedBox(width: 8,),
       Text(
-        'or',
+        'Or login with',
         textAlign: TextAlign.center,
         style: TextStyle(
-          color: Colors.grey.shade600,
-          fontSize: 10,
+          color: Colors.white,
+          fontSize:  16,
           decoration: TextDecoration.none,
+          fontFamily: FontManager.fontFamAPP
         ),
       ),
       SizedBox(width: 8,),
