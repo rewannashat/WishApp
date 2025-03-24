@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:wish/presentation/resources/routes-manager.dart';
 import 'package:wish/presentation/screens/BottomNav/bottomnav_cubit.dart';
+import 'package:wish/presentation/screens/BottomNav/bottomnavbar_view.dart';
 import 'package:wish/presentation/screens/Live/live_view.dart';
 import 'package:wish/presentation/screens/Live/live_viewModel/live_cubit.dart';
 import 'package:wish/presentation/screens/More/more_view.dart';
@@ -14,6 +15,7 @@ import 'package:wish/presentation/screens/Movie/movie_view.dart';
 import 'package:wish/presentation/screens/Movie/movie_viewModel/movie_cubit.dart';
 import 'package:wish/presentation/screens/series/series_view.dart';
 import 'package:wish/presentation/screens/series/seris_viewModel/series_cubit.dart';
+import 'package:wish/test_view.dart';
 import 'domian/Lang/app_locale.dart';
 import 'domian/bloc_observer.dart';
 import 'domian/local/sharedPref.dart';
@@ -77,14 +79,9 @@ class MyApp extends StatelessWidget {
           GlobalCupertinoLocalizations.delegate,
         ],
         builder: DevicePreview.appBuilder,
-        initialRoute: Routes.liveScreen,
+        home: BottomNavBar(),
         routes: {
-          Routes.liveScreen: (context) => LiveView(),
           Routes.movieScreen: (context) => MovieView(),
-          Routes.seriesScreen: (context) => SeriesView(),
-          Routes.moreScreen: (context) => MoreView(),
-
-
         },
       ),
     );

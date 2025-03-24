@@ -1,28 +1,38 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:wish/presentation/resources/constants/custom-staticwidget.dart';
+import 'package:wish/presentation/screens/More/more_view.dart';
+import 'package:wish/presentation/screens/Movie/movie_view.dart';
+import 'package:wish/presentation/screens/Series/series_view.dart';
 
-class BottomNavBarCubit extends Cubit<int> {
-  BottomNavBarCubit() : super(0);
+import '../Live/live_view.dart';
+import 'bottomnav_state.dart';
 
-  int get selectedIndex => state;
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-  void onItemTapped(BuildContext context, int index) {
-    if (state != index) {
-      emit(index);
-      switch (index) {
-        case 0:
-          Navigator.pushReplacementNamed(context, '/live');
-          break;
-        case 1:
-          Navigator.pushReplacementNamed(context, '/movies');
-          break;
-        case 2:
-          Navigator.pushReplacementNamed(context, '/series');
-          break;
-        case 3:
-          Navigator.pushReplacementNamed(context, '/more');
-          break;
-      }
+
+class BottomNavBarCubit extends Cubit<BottomNavBarState> {
+  BottomNavBarCubit() : super(BottomNavBarInitial());
+
+  static BottomNavBarCubit get(context) => BlocProvider.of<BottomNavBarCubit>(context);
+
+
+  // == Bottom Nav Bar LOGIC == //
+  int currentIndex = 0;
+
+  void changePage(int index) {
+    if (currentIndex != index) {
+      currentIndex = index;
+      emit(ChangeBottomNavState());
     }
   }
+
+  final List<Widget> screens = [
+    LiveView(),
+    MovieView(),
+    SeriesView(),
+    MoreView(),
+  ];
+
 }

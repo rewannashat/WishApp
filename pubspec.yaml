@@ -25,6 +25,7 @@ dependencies:
   smooth_page_indicator: ^1.1.0
   hexcolor: ^3.0.1
   flutter_screenutil: ^5.9.0
+  flutter_snake_navigationbar: ^0.6.1
 
   # State Management
   bloc: ^8.1.2

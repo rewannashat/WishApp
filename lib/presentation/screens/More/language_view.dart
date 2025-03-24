@@ -50,13 +50,6 @@ class LanguageView extends StatelessWidget {
             SizedBox(height: 80.h), // Adjust space for app bar
             _buildListTile(Icons.playlist_play, "Arabic" , () => NormalNav(ctx: context,screen: PlaylistsView())),
             _buildListTile(Icons.settings, "English" , () => NormalNav(ctx: context,screen: PlaylistsView())),
-            const Spacer(),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: SafeArea(
-                child: BottomNavBar(),
-              ),
-            ),
           ],
         ),
       ),

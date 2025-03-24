@@ -57,13 +57,6 @@ class SettingsView extends StatelessWidget {
             _buildListTile(Icons.settings, "Clear Cache" , () => NormalNav(ctx: context,screen: ClearCacheView())),
             _buildListTile(Icons.settings, "Parent Control" , () => NormalNav(ctx: context,screen: ParentControlView())),
 
-            const Spacer(),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: SafeArea(
-                child: BottomNavBar(),
-              ),
-            ),
           ],
         ),
       ),

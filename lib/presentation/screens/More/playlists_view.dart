@@ -137,12 +137,6 @@ class PlaylistsView extends StatelessWidget {
                 },
               ),
             ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: SafeArea(
-                child: BottomNavBar(),
-              ),
-            ),
           ],
         ),
       ),

@@ -1,18 +1,32 @@
 import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'movie_states.dart';
 
 
-class MovieCubit extends Cubit<Set<int>> {
-  MovieCubit() : super({});
+class MovieCubit extends Cubit<MovieState> {
+  MovieCubit() : super(MovieInitial());
 
+  static MovieCubit get(context) => BlocProvider.of<MovieCubit>(context);
 
-  //== Fav Icon LOGIC ==//
-  void toggleFavorite(int index) {
-    if (state.contains(index)) {
-      emit(Set.from(state)..remove(index));
+  //== Favorite LOGIC ==//
+  final Set<int> _favorites = {};
+
+  void toggleFavorite(int movieId) {
+    if (_favorites.contains(movieId)) {
+      _favorites.remove(movieId);
     } else {
-      emit(Set.from(state)..add(index));
+      _favorites.add(movieId);
     }
+    emit(FavoriteUpdated(Set<int>.from(_favorites)));
   }
+
+  bool isFavorite(int movieId) {
+    return _favorites.contains(movieId);
+  }
+
+
+
 
   //== Category LOGIC ==//
   final List<String> categories = ['أفلام مصري 2022', 'أفلام مصري 2024', 'أفلام مصري 2025', 'أفلام مصري'];
@@ -20,8 +34,10 @@ class MovieCubit extends Cubit<Set<int>> {
 
   void changeCategory(String newCategory) {
     selectedCategory = newCategory;
-    emit(Set.from(state));
+    emit(ChangeCategoryState());
   }
+
+
 
 
 }

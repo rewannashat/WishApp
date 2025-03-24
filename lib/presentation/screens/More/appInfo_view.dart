@@ -90,13 +90,6 @@ class ApplicationInfoView extends StatelessWidget {
                 ),
               ),
             ),
-            const Spacer(),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: SafeArea(
-                child: BottomNavBar(),
-              ),
-            ),
           ],
         ),
       ),

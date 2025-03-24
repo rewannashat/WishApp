@@ -51,13 +51,6 @@ class MoreView extends StatelessWidget {
             SizedBox(height: 80.h), // Adjust space for app bar
             _buildListTile(Icons.playlist_play, "Playlist" , () => NormalNav(ctx: context,screen: PlaylistsView())),
             _buildListTile(Icons.settings, "Settings" , () => NormalNav(ctx: context,screen: SettingsView())),
-            const Spacer(),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: SafeArea(
-                child: BottomNavBar(),
-              ),
-            ),
           ],
         ),
       ),
