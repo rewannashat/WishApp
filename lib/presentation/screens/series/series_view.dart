@@ -148,59 +148,17 @@ class SeriesView extends StatelessWidget {
                     onTap: () {
                       NormalNav(ctx: context, screen: SeriesDetailsView(index: index));
                     },
-                    child: Stack(
-                      children: [
-                        Container(
-                          height: 130.h,
-                          width: 100.w,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(AppSize.s15.r),
-                            image: DecorationImage(
-                              image: AssetImage('assets/images/series.png'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+                    child: Container(
+                      height: 130.h,
+                      width: 100.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(AppSize.s15.r),
+                        image: DecorationImage(
+                          image: AssetImage('assets/images/series.png'),
+                          fit: BoxFit.cover,
                         ),
-                        Positioned(
-                          bottom: 5,
-                          right: 5,
-                          child: GestureDetector(
-                            onTap: () {
-                              context.read<SeriesCubit>().toggleFavorite(index);
-                              toast(
-                                msg: context.read<SeriesCubit>().state.contains(index)
-                                    ? 'Added to favorites'
-                                    : 'Removed from favorites',
-                                state: StatusCase.SUCCES,
-                              );
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black54,
-                                    blurRadius: 6.0,
-                                    spreadRadius: 2.0,
-                                  ),
-                                ],
-                              ),
-                              child: BlocBuilder<SeriesCubit, Set<int>>(
-                                builder: (context, favorites) {
-                                  return Icon(
-                                    favorites.contains(index)
-                                        ? Icons.favorite
-                                        : Icons.favorite,
-                                    color: favorites.contains(index) ? Colors.red : Colors.white,
-                                    size: AppSize.s30.sp,
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        )
-                      ],
+                      ),
                     ),
                   ),
                   SizedBox(height: 10.h),
