@@ -19,17 +19,13 @@ import 'movieDetails_view.dart';
 import 'movie_viewModel/movie_cubit.dart';
 
 class MovieView extends StatefulWidget {
-  bool? isFav;
-  int? id ;
-
-  MovieView({super.key, this.isFav , this.id});
+  const MovieView({super.key});
 
   @override
   State<MovieView> createState() => _MovieViewState();
 }
 
 class _MovieViewState extends State<MovieView> {
-
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -42,9 +38,6 @@ class _MovieViewState extends State<MovieView> {
 
     // input
     final TextEditingController _searchController = TextEditingController();
-
-
-
 
     return Column(
       children: [
@@ -62,10 +55,8 @@ class _MovieViewState extends State<MovieView> {
                   child: Row(
                     children: [
                       Padding(
-                        padding:
-                        EdgeInsets.symmetric(horizontal: AppSize.s10),
-                        child: Icon(Icons.arrow_back,
-                            color: ColorsManager.whiteColor),
+                        padding: EdgeInsets.symmetric(horizontal: AppSize.s10),
+                        child: Icon(Icons.arrow_back, color: ColorsManager.whiteColor),
                       ),
                       Expanded(
                         child: Padding(
@@ -82,14 +73,13 @@ class _MovieViewState extends State<MovieView> {
                             radius: AppSize.s10.r,
                             colorBorder: Colors.transparent,
                             prefixIcon: Icons.search,
-                           prefixIconColor: Colors.white,
+                            prefixIconColor: Colors.white,
                             fillColor: Colors.black.withOpacity(0.5),
                             onSubmitted: (value) => cubit.searchMovies(value),
                             cursorColor: Colors.white,
                           ),
                         ),
                       ),
-
                     ],
                   ),
                 ),
@@ -125,8 +115,7 @@ class _MovieViewState extends State<MovieView> {
                               value: e,
                               child: Text(
                                 e,
-                                style: TextStyle(
-                                    color: ColorsManager.whiteColor),
+                                style: TextStyle(color: ColorsManager.whiteColor),
                               ),
                             ))
                                 .toList(),
@@ -149,78 +138,72 @@ class _MovieViewState extends State<MovieView> {
         Expanded(
           child: BlocBuilder<MovieCubit, MovieState>(
             builder: (context, state) {
-            //  log('here ui ${cubit.filteredMovies}');
-              final movies = cubit.filteredMovies.isNotEmpty || _searchController.text.isNotEmpty
+              final movies = cubit.selectedCategory == 'Favorite'
+                  ? cubit.favoriteMovies
+                  : (cubit.filteredMovies.isNotEmpty || _searchController.text.isNotEmpty
                   ? cubit.filteredMovies
-                  : cubit.allMovies;
+                  : cubit.allMovies);
               return GridView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 0.6,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
-              itemCount: movies.length,
-              itemBuilder: (context, index) {
-                return Column(
-                  children: [
-                    GestureDetector(
-                      onTap: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => MovieDetailScreen(index: index),
-                          ),
-                        );
-                        if (result != null) {
-                          setState(() {
-                            widget.isFav = result['isFav'];
-                            widget.id = result['id'];
-                          });
-                          log('Updated: isFav = ${widget.isFav}, id = ${widget.id}');
-                        }
-                      },
-                      child: Stack(
-                        children: [
-                          Container(
-                            height: 130.h,
-                            width: 100.w,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(AppSize.s15.r),
-                              image: DecorationImage(
-                                image: AssetImage('assets/images/movie.png'),
-                                fit: BoxFit.cover,
-                              ),
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 0.6,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
+                itemCount: movies.length,
+                itemBuilder: (context, index) {
+                  final isFavorite = cubit.isFavorite(index);
+                  return Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MovieDetailScreen(index: index),
                             ),
-                          ),
-                          (widget.isFav == true && widget.id == index)
-                              ? Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.favorite,
+                          );
+                          if (result != null) {
+                            setState(() {});
+                            log('Updated: isFav = ${result['isFav']}, id = ${result['id']}');
+                          }
+                        },
+                        child: Stack(
+                          children: [
+                            Container(
+                              height: 130.h,
+                              width: 100.w,
+                              decoration: BoxDecoration(
                                 color: Colors.white,
-                                size: 28,
+                                borderRadius: BorderRadius.circular(AppSize.s15.r),
+                                image: DecorationImage(
+                                  image: AssetImage('assets/images/movie.png'),
+                                  fit: BoxFit.cover,
+                                ),
                               ),
-                              onPressed: () {},
                             ),
-                          )
-                              : const SizedBox.shrink(),
-                        ],
+                            if (isFavorite)
+                              Positioned(
+                                bottom: 10,
+                                right: 5,
+                                child: Icon(
+                                  Icons.favorite,
+                                  color: Colors.white,
+                                  size: 28,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 10.h),
-                    Text(movies[index],
-                        style: getRegularTitleStyle(
-                            color: ColorsManager.whiteColor,
-                            fontSize: AppSize.s12.sp)),
-                  ],
-                );
-              },
-            );
+                      SizedBox(height: 10.h),
+                      Text(movies[index],
+                          style: getRegularTitleStyle(
+                              color: ColorsManager.whiteColor, fontSize: AppSize.s12.sp)),
+                    ],
+                  );
+                },
+              );
             },
           ),
         ),
