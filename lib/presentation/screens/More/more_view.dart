@@ -21,7 +21,7 @@ class MoreView extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => NormalNav(ctx: context,screen: BottomNavBar()),
+          onPressed: () => {},
         ),
         title: const Text('More', style: TextStyle(color: Colors.white)),
         centerTitle: true,

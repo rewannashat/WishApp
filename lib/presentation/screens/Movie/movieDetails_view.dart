@@ -193,14 +193,20 @@ class MovieDetailScreen extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 12.h),
-                    Padding(
-                      padding: const EdgeInsetsDirectional.symmetric(horizontal: 20),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           _buildCastItem('Mona Zaki', 'assets/images/cast.png'),
+                          SizedBox(width: 10.w),
                           _buildCastItem('Sheren Reda', 'assets/images/casts.png'),
+                          SizedBox(width: 10.w),
                           _buildCastItem('Mohamed Farag', 'assets/images/person.png'),
+                          SizedBox(width: 10.w),
+                          _buildCastItem('Mohamed Mam..', 'assets/images/movie4.png'),
+
+
                         ],
                       ),
                     ),
