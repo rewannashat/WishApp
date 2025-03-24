@@ -36,7 +36,7 @@ class BottomNavBar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey,
+                        color: Colors.black26,
                         blurRadius: 10,
                         offset: Offset(0, -2),
                       ),
@@ -46,7 +46,7 @@ class BottomNavBar extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _buildNavItem('assets/images/live.png', 'Live', 0, cubit),
-                      _buildNavItem('assets/images/movieimage.png', 'Movie', 1, cubit),
+                      _buildNavItem('assets/images/Group103.png', 'Movie', 1, cubit),
                       _buildNavItem('assets/images/Vector.png', 'Series', 2, cubit),
                       _buildNavItem('assets/images/more.png', 'More', 3, cubit),
                     ],

@@ -24,7 +24,8 @@ class MovieCubit extends Cubit<MovieState> {
     return _favorites.contains(movieId);
   }
 
-  List<String> get favoriteMovies => _favorites.map((id) => allMovies[id]).toList();
+  List<Map<String, String>> get favoriteMovies =>
+      _favorites.map((id) => allMovies[id]).toList();
 
   //== Category LOGIC ==//
   final List<String> categories = ['أفلام مصري 2022', 'أفلام مصري 2024', 'أفلام مصري 2025', 'أفلام مصري','Favorite'];
@@ -36,20 +37,42 @@ class MovieCubit extends Cubit<MovieState> {
   }
 
   // ====== Search LOGIC ======
-  List<String> allMovies = [
-    'رحلة 404', 'ابو نسب', 'مقسوم','المداح','المداح 2'
+  List<Map<String, String>> allMovies = [
+    {
+      'title': 'رحلة 404',
+      'image': 'assets/images/movie.png',
+    },
+    {
+      'title': 'ابو نسب',
+      'image': 'assets/images/movieImage.png',
+    },
+    {
+      'title': 'مقسوم',
+      'image': 'assets/images/Rectangle.png',
+    },
+    {
+      'title': 'المداح',
+      'image': 'assets/images/movieImage.png',
+    },
+    {
+      'title': 'المداح 2',
+      'image': 'assets/images/movie.png',
+    },
   ];
-  List<String> filteredMovies = [];
+
+  List<Map<String, String>> filteredMovies = [];
 
   void searchMovies(String query) {
     if (query.isEmpty) {
       filteredMovies = List.from(allMovies);
     } else {
       filteredMovies = allMovies
-          .where((movie) => movie.toLowerCase().contains(query.toLowerCase()))
+          .where((movie) =>
+          movie['title']!.toLowerCase().contains(query.toLowerCase()))
           .toList();
     }
     log('the filter $filteredMovies');
     emit(SearchMoviesState(filteredMovies));
   }
+
 }

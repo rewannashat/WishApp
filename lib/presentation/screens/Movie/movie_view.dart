@@ -153,6 +153,7 @@ class _MovieViewState extends State<MovieView> {
                 ),
                 itemCount: movies.length,
                 itemBuilder: (context, index) {
+                  final movie = movies[index];
                   final isFavorite = cubit.isFavorite(index);
                   return Column(
                     children: [
@@ -178,7 +179,7 @@ class _MovieViewState extends State<MovieView> {
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(AppSize.s15.r),
                                 image: DecorationImage(
-                                  image: AssetImage('assets/images/movie.png'),
+                                  image: AssetImage(movie['image'] ?? 'assets/images/movie.png'),
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -197,7 +198,7 @@ class _MovieViewState extends State<MovieView> {
                         ),
                       ),
                       SizedBox(height: 10.h),
-                      Text(movies[index],
+                      Text( movie['title'] ?? 'Unknown',
                           style: getRegularTitleStyle(
                               color: ColorsManager.whiteColor, fontSize: AppSize.s12.sp)),
                     ],

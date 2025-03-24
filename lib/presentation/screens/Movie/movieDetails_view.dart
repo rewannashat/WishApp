@@ -29,7 +29,7 @@ class MovieDetailScreen extends StatelessWidget {
             backgroundColor: Colors.transparent,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              icon: const Icon(Icons.arrow_back, color: Colors.white , size: 28,),
               onPressed: () => Navigator.pop(context, {'isFav': isFavorite, 'id': index}),
             ),
             actions: [
@@ -37,6 +37,7 @@ class MovieDetailScreen extends StatelessWidget {
                 icon: Icon(
                   isFavorite ? Icons.favorite : Icons.favorite_border,
                   color: isFavorite ? Colors.red : Colors.white,
+                  size: 28,
                 ),
                 onPressed: () {
                   MovieCubit.get(context).toggleFavorite(index);

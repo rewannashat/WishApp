@@ -8,8 +8,7 @@ class FavoriteUpdated extends MovieState {
   FavoriteUpdated(this.favorites);
 }
 
-
 class SearchMoviesState extends MovieState {
-  final List<String> filteredMovies;
+  final List<Map<String, String>> filteredMovies;
   SearchMoviesState(this.filteredMovies);
 }

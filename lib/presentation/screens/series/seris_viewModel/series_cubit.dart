@@ -12,7 +12,7 @@ class SeriesCubit extends Cubit<SeriesState> {
 
 
   //== Category LOGIC ==//
-  final List<String> categories = ['مسلسلات مصري 2022', 'مسلسلات رمضان 2024', 'مسلسلات رمضان 2025', 'مسلسلات مصري'];
+  final List<String> categories = ['مسلسلات مصري 2022', 'مسلسلات رمضان 2024', 'مسلسلات رمضان 2025', 'مسلسلات مصري','Favorite'];
   String selectedCategory = 'مسلسلات مصري 2022';
 
 
@@ -23,8 +23,9 @@ class SeriesCubit extends Cubit<SeriesState> {
   }
 
 
+
   //== Category Details LOGIC ==//
-  final List<String> categoriesDetails = ['Seasons1', 'Seasons2' , 'Seasons3' , 'Seasons4'];
+  final List<String> categoriesDetails = ['Seasons1', 'Seasons2' , 'Seasons3' , 'Seasons4','Favorite'];
   String selectedcategoriesDetails = 'Seasons1';
 
   void changeCategoryDetails(String newCategory) {
@@ -32,19 +33,59 @@ class SeriesCubit extends Cubit<SeriesState> {
     emit(ChangeCategorySeasonsState());
   }
 
+  //== Favorite LOGIC ==//
+  final Set<int> _favorites = {};
+
+  void toggleFavorite(int seriesId) {
+    if (_favorites.contains(seriesId)) {
+      _favorites.remove(seriesId);
+    } else {
+      _favorites.add(seriesId);
+    }
+    emit(FavoriteUpdated(Set<int>.from(_favorites)));
+  }
+
+  bool isFavorite(int seriesId) {
+    return _favorites.contains(seriesId);
+  }
+
+  List<Map<String, String>> get favoriteSeries =>
+      _favorites.map((id) => allSeries[id]).toList();
+
 
   // ====== Search LOGIC ======
-  List<String> allSeries = [
-    'أشغال شاقة', 'كامل العدد', 'المداح','المداح5','المداح 3'
+
+  List<Map<String, String>> allSeries = [
+    {
+      'title': 'أشغال شاقة',
+      'image': 'assets/images/series.png',
+    },
+    {
+      'title': 'كامل العدد',
+      'image': 'assets/images/rrr.png',
+    },
+    {
+      'title': 'المداح',
+      'image': 'assets/images/g.png',
+    },
+    {
+      'title': 'المداح5',
+      'image': 'assets/images/rrr.png',
+    },
+    {
+      'title': 'المداح 2',
+      'image': 'assets/images/series.png',
+    },
   ];
-  List<String> filteredSeries = [];
+  List<Map<String, String>> filteredSeries = [];
 
   void searchSeries(String query) {
     if (query.isEmpty) {
       filteredSeries = List.from(allSeries);
     } else {
       filteredSeries = allSeries
-          .where((movie) => movie.toLowerCase().contains(query.toLowerCase()))
+          .where((movie) =>
+          movie['title']!.toLowerCase().contains(query.toLowerCase()))
           .toList();
     }
     log('the filter $filteredSeries');

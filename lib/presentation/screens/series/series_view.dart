@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
@@ -17,10 +18,14 @@ import '../../resources/constants/custom-textfield-constant.dart';
 import '../../resources/styles-manager.dart';
 import '../BottomNav/bottomnavbar_view.dart';
 
-
-class SeriesView extends StatelessWidget {
+class SeriesView extends StatefulWidget {
   const SeriesView({super.key});
 
+  @override
+  State<SeriesView> createState() => _SeriesViewState();
+}
+
+class _SeriesViewState extends State<SeriesView> {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -36,7 +41,6 @@ class SeriesView extends StatelessWidget {
 
     // input
     final TextEditingController _searchController = TextEditingController();
-
 
     return Column(
       children: [
@@ -54,8 +58,7 @@ class SeriesView extends StatelessWidget {
                   child: Row(
                     children: [
                       Padding(
-                        padding:
-                        EdgeInsets.symmetric(horizontal: AppSize.s10),
+                        padding: EdgeInsets.symmetric(horizontal: AppSize.s10),
                         child: Icon(Icons.arrow_back,
                             color: ColorsManager.whiteColor),
                       ),
@@ -81,7 +84,6 @@ class SeriesView extends StatelessWidget {
                           ),
                         ),
                       ),
-
                     ],
                   ),
                 ),
@@ -114,13 +116,13 @@ class SeriesView extends StatelessWidget {
                             value: cubit.selectedCategory,
                             items: cubit.categories
                                 .map((e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(
-                                e,
-                                style: TextStyle(
-                                    color: ColorsManager.whiteColor),
-                              ),
-                            ))
+                                      value: e,
+                                      child: Text(
+                                        e,
+                                        style: TextStyle(
+                                            color: ColorsManager.whiteColor),
+                                      ),
+                                    ))
                                 .toList(),
                             onChanged: (newValue) {
                               if (newValue != null) {
@@ -141,52 +143,80 @@ class SeriesView extends StatelessWidget {
         Expanded(
           child: BlocBuilder<SeriesCubit, SeriesState>(
             builder: (context, state) {
-              //  log('here ui ${cubit.filteredMovies}');
-              final series = cubit.filteredSeries.isNotEmpty || _searchController.text.isNotEmpty
-                  ? cubit.filteredSeries
-                  : cubit.allSeries;
+              final series = cubit.selectedCategory == 'Favorite'
+                  ? cubit.favoriteSeries
+                  : (cubit.filteredSeries.isNotEmpty ||
+                          _searchController.text.isNotEmpty
+                      ? cubit.filteredSeries
+                      : cubit.allSeries);
               return GridView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 0.6,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
-              itemCount: series.length,
-              itemBuilder: (context, index) {
-                return Column(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        NormalNav(ctx: context, screen: SeriesDetailsView(index: index));
-                      },
-                      child: Container(
-                        height: 130.h,
-                        width: 100.w,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(AppSize.s15.r),
-                          image: DecorationImage(
-                            image: AssetImage('assets/images/series.png'),
-                            fit: BoxFit.cover,
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 0.6,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                ),
+                itemCount: series.length,
+                itemBuilder: (context, index) {
+                  final seriess = series[index];
+                  final isFavorite = cubit.isFavorite(index);
+                  return Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  SeriesDetailsView(index: index),
+                            ),
+                          );
+                          if (result != null) {
+                            setState(() {});
+                            log('Updated: isFav = ${result['isFav']}, id = ${result['id']}');
+                          }
+                        },
+                        child: Stack(children: [
+                          Container(
+                            height: 130.h,
+                            width: 100.w,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius:
+                                  BorderRadius.circular(AppSize.s15.r),
+                              image: DecorationImage(
+                                image: AssetImage(seriess['image'] ??
+                                    'assets/images/movie.png'),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           ),
-                        ),
+                          if (isFavorite)
+                            Positioned(
+                              bottom: 10,
+                              right: 5,
+                              child: Icon(
+                                Icons.favorite,
+                                color: Colors.white,
+                                size: 28,
+                              ),
+                            ),
+                        ]),
                       ),
-                    ),
-                    SizedBox(height: 10.h),
-                    Text(series[index],
-                        style: getRegularTitleStyle(
-                            color: ColorsManager.whiteColor, fontSize: AppSize.s12.sp)),
-                  ],
-                );
-              },
-            );
+                      SizedBox(height: 10.h),
+                      Text(seriess['title'] ?? 'Unknown',
+                          style: getRegularTitleStyle(
+                              color: ColorsManager.whiteColor,
+                              fontSize: AppSize.s12.sp)),
+                    ],
+                  );
+                },
+              );
             },
           ),
         ),
       ],
     );
-
   }
 }

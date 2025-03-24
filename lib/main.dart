@@ -10,6 +10,7 @@ import 'package:wish/presentation/screens/BottomNav/bottomnav_cubit.dart';
 import 'package:wish/presentation/screens/BottomNav/bottomnavbar_view.dart';
 import 'package:wish/presentation/screens/Live/live_view.dart';
 import 'package:wish/presentation/screens/Live/live_viewModel/live_cubit.dart';
+import 'package:wish/presentation/screens/Logins/splash_view.dart';
 import 'package:wish/presentation/screens/More/more_view.dart';
 import 'package:wish/presentation/screens/Movie/movie_view.dart';
 import 'package:wish/presentation/screens/Movie/movie_viewModel/movie_cubit.dart';
@@ -79,7 +80,7 @@ class MyApp extends StatelessWidget {
           GlobalCupertinoLocalizations.delegate,
         ],
         builder: DevicePreview.appBuilder,
-        home: BottomNavBar(),
+        home: SplashView(),
         routes: {
           Routes.movieScreen: (context) => MovieView(),
         },
