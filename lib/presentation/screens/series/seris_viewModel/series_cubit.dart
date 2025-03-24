@@ -1,18 +1,15 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wish/presentation/screens/series/seris_viewModel/series_states.dart';
 
 
-class SeriesCubit extends Cubit<Set<int>> {
-  SeriesCubit() : super({});
+class SeriesCubit extends Cubit<SeriesState> {
+  SeriesCubit() : super(SeriesInitial());
 
+  static SeriesCubit get(context) => BlocProvider.of<SeriesCubit>(context);
 
-  //== Fav Icon LOGIC ==//
-  void toggleFavorite(int index) {
-    if (state.contains(index)) {
-      emit(Set.from(state)..remove(index));
-    } else {
-      emit(Set.from(state)..add(index));
-    }
-  }
 
   //== Category LOGIC ==//
   final List<String> categories = ['مسلسلات مصري 2022', 'مسلسلات رمضان 2024', 'مسلسلات رمضان 2025', 'مسلسلات مصري'];
@@ -22,7 +19,7 @@ class SeriesCubit extends Cubit<Set<int>> {
 
   void changeCategory(String newCategory) {
     selectedCategory = newCategory;
-    emit(Set.from(state));
+    emit(ChangeCategoryState());
   }
 
 
@@ -32,7 +29,27 @@ class SeriesCubit extends Cubit<Set<int>> {
 
   void changeCategoryDetails(String newCategory) {
     selectedcategoriesDetails = newCategory;
-    emit(Set.from(state));
+    emit(ChangeCategorySeasonsState());
   }
+
+
+  // ====== Search LOGIC ======
+  List<String> allSeries = [
+    'أشغال شاقة', 'كامل العدد', 'المداح','المداح5','المداح 3'
+  ];
+  List<String> filteredSeries = [];
+
+  void searchSeries(String query) {
+    if (query.isEmpty) {
+      filteredSeries = List.from(allSeries);
+    } else {
+      filteredSeries = allSeries
+          .where((movie) => movie.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    }
+    log('the filter $filteredSeries');
+    emit(SearchSeriesState(filteredSeries));
+  }
+
 
 }

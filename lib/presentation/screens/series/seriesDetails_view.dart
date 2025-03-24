@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:wish/presentation/screens/series/seris_viewModel/series_cubit.dart';
+import 'package:wish/presentation/screens/series/seris_viewModel/series_states.dart';
 
 import '../../../domian/Lang/helper_lang.dart';
 import '../../resources/colors-manager.dart';
@@ -54,7 +55,7 @@ class SeriesDetailsView extends StatelessWidget {
                                     icon: const Icon(Icons.arrow_back, color: Colors.white , size: 30,),
                                     onPressed: () => Navigator.of(context).pop(),
                                   ),
-                                  BlocBuilder<SeriesCubit, Set<int>>(
+                                  BlocBuilder<SeriesCubit, SeriesState>(
                                     builder: (context, state) {
                                       final cubit = context.read<SeriesCubit>();
                                       return Container(

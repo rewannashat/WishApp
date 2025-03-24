@@ -10,6 +10,7 @@ import 'package:wish/presentation/resources/font-manager.dart';
 import 'package:wish/presentation/resources/values-manager.dart';
 import 'package:wish/presentation/screens/series/seriesDetails_view.dart';
 import 'package:wish/presentation/screens/series/seris_viewModel/series_cubit.dart';
+import 'package:wish/presentation/screens/series/seris_viewModel/series_states.dart';
 
 import '../../resources/colors-manager.dart';
 import '../../resources/constants/custom-textfield-constant.dart';
@@ -30,6 +31,12 @@ class SeriesView extends StatelessWidget {
     // data
     List<String> items = List.generate(12, (index) => 'أشغال شاقة');
 
+    // data
+    SeriesCubit cubit = SeriesCubit.get(context);
+
+    // input
+    final TextEditingController _searchController = TextEditingController();
+
 
     return Column(
       children: [
@@ -47,30 +54,34 @@ class SeriesView extends StatelessWidget {
                   child: Row(
                     children: [
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppSize.s10),
-                        child: Icon(Icons.arrow_back, color: ColorsManager.whiteColor),
+                        padding:
+                        EdgeInsets.symmetric(horizontal: AppSize.s10),
+                        child: Icon(Icons.arrow_back,
+                            color: ColorsManager.whiteColor),
                       ),
                       Expanded(
-                        child: Container(
-                          height: size.height * 0.05,
-                          width: double.infinity,
-                          margin: EdgeInsetsDirectional.symmetric(horizontal: 20),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20),
                           child: CustomTextFormField(
-                            // hintTxt: getTranslated(context, 'Search'),
+                            size: Size(double.infinity, size.height * 0.05),
+                            controller: _searchController,
                             hintStyle: TextStyle(
                               fontFamily: FontManager.fontFamilyAPP,
                               color: ColorsManager.whiteColor,
                               fontWeight: FontWightManager.fontWeightLight,
                               fontSize: AppSize.s15.sp,
                             ),
-                            radius: AppSize.s20.r,
+                            radius: AppSize.s10.r,
                             colorBorder: Colors.transparent,
-                            prefixIcon:Icons.search ,
-                            prefixIconColor: ColorsManager.whiteColor,
-                            fillColor: Colors.black54,
+                            prefixIcon: Icons.search,
+                            prefixIconColor: Colors.white,
+                            fillColor: Colors.black.withOpacity(0.5),
+                            onSubmitted: (value) => cubit.searchSeries(value),
+                            cursorColor: Colors.white,
                           ),
                         ),
                       ),
+
                     ],
                   ),
                 ),
@@ -96,77 +107,81 @@ class SeriesView extends StatelessWidget {
                           color: Colors.black.withOpacity(0.5),
                           borderRadius: BorderRadius.circular(AppSize.s12.r),
                         ),
-                        child: BlocBuilder<SeriesCubit, Set<int>>(
-                          builder: (context, state) {
-                            final cubit = context.read<SeriesCubit>();
-                            return DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                dropdownColor: Colors.black.withOpacity(0.5),
-                                isExpanded: true,
-                                value: cubit.selectedCategory,
-                                items: cubit.categories
-                                    .map((e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(
-                                    e,
-                                    style: TextStyle(color: ColorsManager.whiteColor),
-                                  ),
-                                ))
-                                    .toList(),
-                                onChanged: (newValue) {
-                                  if (newValue != null) {
-                                    cubit.changeCategory(newValue);
-                                  }
-                                },
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            dropdownColor: Colors.black.withOpacity(0.5),
+                            isExpanded: true,
+                            value: cubit.selectedCategory,
+                            items: cubit.categories
+                                .map((e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(
+                                e,
+                                style: TextStyle(
+                                    color: ColorsManager.whiteColor),
                               ),
-                            );
-                          },
+                            ))
+                                .toList(),
+                            onChanged: (newValue) {
+                              if (newValue != null) {
+                                cubit.changeCategory(newValue);
+                              }
+                            },
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
-              ),
+              )
             ],
           ),
         ),
         SizedBox(height: size.height * 0.03),
         Expanded(
-          child: GridView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 0.6,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-            ),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              return Column(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      NormalNav(ctx: context, screen: SeriesDetailsView(index: index));
-                    },
-                    child: Container(
-                      height: 130.h,
-                      width: 100.w,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(AppSize.s15.r),
-                        image: DecorationImage(
-                          image: AssetImage('assets/images/series.png'),
-                          fit: BoxFit.cover,
+          child: BlocBuilder<SeriesCubit, SeriesState>(
+            builder: (context, state) {
+              //  log('here ui ${cubit.filteredMovies}');
+              final series = cubit.filteredSeries.isNotEmpty || _searchController.text.isNotEmpty
+                  ? cubit.filteredSeries
+                  : cubit.allSeries;
+              return GridView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 0.6,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: series.length,
+              itemBuilder: (context, index) {
+                return Column(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        NormalNav(ctx: context, screen: SeriesDetailsView(index: index));
+                      },
+                      child: Container(
+                        height: 130.h,
+                        width: 100.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(AppSize.s15.r),
+                          image: DecorationImage(
+                            image: AssetImage('assets/images/series.png'),
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 10.h),
-                  Text(items[index],
-                      style: getRegularTitleStyle(
-                          color: ColorsManager.whiteColor, fontSize: AppSize.s12.sp)),
-                ],
-              );
+                    SizedBox(height: 10.h),
+                    Text(series[index],
+                        style: getRegularTitleStyle(
+                            color: ColorsManager.whiteColor, fontSize: AppSize.s12.sp)),
+                  ],
+                );
+              },
+            );
             },
           ),
         ),
