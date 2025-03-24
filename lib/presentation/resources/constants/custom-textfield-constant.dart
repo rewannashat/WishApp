@@ -3,121 +3,113 @@ import 'package:flutter/material.dart';
 class CustomTextFormField extends StatelessWidget {
   final String? hintTxt;
   final String? label;
-  final String? helperText;
-  final IconData? suffexIcon;
-  final IconData? prefexIcon;
-  final Function? onSaved;
-  final Function? validator;
-  final Function? onChange;
-  final Function? onSubmitted;
-  final Function? onPressedSuffexIcon;
-  final Function? onPressedPrefexIcon;
+  final IconData? suffixIcon;
+  final IconData? prefixIcon;
+  final Function(String)? onSaved;
+  final Function(String)? onChanged;
+  final Function(String)? onSubmitted;
+  final Function()? onPressedSuffixIcon;
+  final Function()? onPressedPrefixIcon;
   final TextInputType? keyboardType;
   final TextEditingController? controller;
   final double? fontSize;
-  final double? contentPadding;
   final Color? colorBorderEnable;
-  final Color? colorBorder ;
-  final Color? suffexIconColor;
-  final Color? prefexIconColor;
+  final Color? colorBorder;
+  final Color? suffixIconColor;
+  final Color? prefixIconColor;
   final FontWeight? fontWeight;
-  final bool? obscureText;
-  final int? minLines;
-  final int? maxLines;
-  final TextAlign? textAlign;
-  final TextDirection? textDirection;
+  final bool obscureText;
+  final int minLines;
+  final int maxLines;
   final TextStyle? hintStyle;
   final TextStyle? labelStyle;
-  final double? radius ;
-  final OutlineInputBorder? out ;
-  final String? prefexTxt;
-  final double? elevation;
+  final double radius;
   final Color? fillColor;
-  final FocusNode? focusNode ;
+  final Color? cursorColor;
+  final Size? size;
 
-
-
-  CustomTextFormField({
+  const CustomTextFormField({
+    super.key,
     this.hintTxt,
-    this.out,
-    this.onSaved,
-    this.validator,
-    this.suffexIcon,
-    this.onPressedSuffexIcon,
-    this.onPressedPrefexIcon,
-    this.onSubmitted,
-    this.keyboardType,
-    this.radius,
-    this.colorBorder,
     this.label,
-    this.hintStyle,
-    this.labelStyle,
+    this.suffixIcon,
+    this.prefixIcon,
+    this.onSaved,
+    this.onChanged,
+    this.onSubmitted,
+    this.onPressedSuffixIcon,
+    this.onPressedPrefixIcon,
+    this.keyboardType,
     this.controller,
-    this.onChange,
     this.fontSize = 16,
     this.colorBorderEnable = Colors.black,
-    this.suffexIconColor,
-    this.prefexIconColor,
+    this.colorBorder,
+    this.suffixIconColor,
+    this.prefixIconColor ,
     this.fontWeight = FontWeight.w600,
     this.obscureText = false,
-    this.maxLines = 1,
     this.minLines = 1,
-    this.helperText = '',
-    this.prefexIcon,
-    this.contentPadding = 12,
-    this.textAlign = TextAlign.right,
-    this.textDirection = TextDirection.rtl,
-    this.prefexTxt,
-    this.elevation,
+    this.maxLines = 1,
+    this.hintStyle,
+    this.labelStyle,
+    this.radius = 12.0,
     this.fillColor,
-    this.focusNode,
+    this.cursorColor,
+    this.size,
   });
 
   @override
   Widget build(BuildContext context) {
-    MediaQueryData media = MediaQuery.of(context);
-    return TextFormField(
-      cursorColor:Colors.white ,
-      style: TextStyle(color: Colors.white),
-      onSaved: (val) => onSaved!(val),
-      validator: (val) => validator!(val),
-      onFieldSubmitted :(val) => onSubmitted!(val),
-     // onChanged:(val) => onChange!(),
-      controller: controller,
-      minLines: minLines,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        prefixText: prefexTxt,
-        hintText: hintTxt ,
-        hintStyle: hintStyle,
-        labelText: label,
-        labelStyle: labelStyle,
-        filled: fillColor != null,
-        fillColor: fillColor,
-        suffixIcon:  IconButton(
-          onPressed: () => onPressedSuffexIcon!(),
-          icon: Icon(suffexIcon),
+    return SizedBox(
+      width: size?.width,
+      height: size?.height,
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        obscureText: obscureText,
+        minLines: minLines,
+        maxLines: maxLines,
+        cursorColor: cursorColor,
+        style: TextStyle(
+            color: Colors.white, fontSize: fontSize, fontWeight: fontWeight),
+        onSaved: (val) => onSaved?.call(val ?? ''),
+        onChanged: (val) => onChanged?.call(val),
+        onFieldSubmitted: (val) => onSubmitted?.call(val),
+        decoration: InputDecoration(
+          hintText: hintTxt,
+          hintStyle: hintStyle,
+          labelText: label,
+          labelStyle: labelStyle,
+          filled: fillColor != null,
+          fillColor: fillColor,
+          suffixIcon: suffixIcon != null
+              ? IconButton(
+                  icon: Icon(suffixIcon),
+                  color: suffixIconColor,
+                  onPressed: onPressedSuffixIcon,
+                )
+              : null,
+          prefixIcon: prefixIcon != null
+              ? IconButton(
+            icon: Icon(
+              prefixIcon,
+              color: prefixIconColor,
+            ),
+            onPressed: onPressedPrefixIcon,
+          )
+              : null,
+
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(radius),
+            borderSide: BorderSide(color: colorBorderEnable!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(radius),
+            borderSide: BorderSide(color: colorBorder ?? Colors.white),
+          ),
+          border: OutlineInputBorder(),
         ),
-        suffixIconColor: suffexIconColor,
-        prefixIcon: IconButton(
-          icon: Icon(prefexIcon),
-          onPressed:() => onPressedPrefexIcon!(),
-        ),
-        prefixIconColor: prefexIconColor,
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color:colorBorderEnable!,),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radius!),
-          borderSide:  BorderSide(color: colorBorder!),//out color
-        ),
-        border: OutlineInputBorder(),
       ),
-      mouseCursor: MouseCursor.defer,
-      keyboardType: keyboardType,
-      obscureText: obscureText!,
-      //focusNode: focusNode, // Add focusNode here
     );
   }
 }

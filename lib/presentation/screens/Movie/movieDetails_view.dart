@@ -45,7 +45,7 @@ class MovieDetailScreen extends StatelessWidget {
             ],
           ),
           extendBodyBehindAppBar: true,
-          backgroundColor:  Colors.black54,
+          backgroundColor:  Colors.black87,
           body: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

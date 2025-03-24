@@ -7,3 +7,9 @@ class FavoriteUpdated extends MovieState {
   final Set<int> favorites;
   FavoriteUpdated(this.favorites);
 }
+
+
+class SearchMoviesState extends MovieState {
+  final List<String> filteredMovies;
+  SearchMoviesState(this.filteredMovies);
+}

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -37,6 +39,23 @@ class MovieCubit extends Cubit<MovieState> {
     emit(ChangeCategoryState());
   }
 
+// ====== Search LOGIC ======
+  List<String> allMovies = [
+    'رحلة 404', 'ابو نسب', 'مقسوم','المداح','المداح 2'
+  ];
+  List<String> filteredMovies = [];
+
+  void searchMovies(String query) {
+    if (query.isEmpty) {
+      filteredMovies = List.from(allMovies);
+    } else {
+      filteredMovies = allMovies
+          .where((movie) => movie.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    }
+    log('the filter $filteredMovies');
+    emit(SearchMoviesState(filteredMovies));
+  }
 
 
 

@@ -38,181 +38,189 @@ class _MovieViewState extends State<MovieView> {
     Locale myLocale = Localizations.localeOf(context);
 
     // data
-    List<String> items = List.generate(12, (index) => 'رحلة 404');
     MovieCubit cubit = MovieCubit.get(context);
-    Set<int> favoriteIds = {};
 
-    log('isFav: ${widget.isFav}, id: ${widget.id}');
+    // input
+    final TextEditingController _searchController = TextEditingController();
+
+
+
 
     return Column(
       children: [
         SizedBox(height: size.height * 0.05),
-        BlocConsumer<MovieCubit, MovieState>(
-          listener: (context, state) => {},
-          builder: (context, state) => Padding(
-            padding: EdgeInsets.only(left: AppSize.s15, right: AppSize.s15),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(AppSize.s20.r),
-                  ),
-                  child: Center(
-                    child: Row(
-                      children: [
-                        Padding(
-                          padding:
-                          EdgeInsets.symmetric(horizontal: AppSize.s10),
-                          child: Icon(Icons.arrow_back,
-                              color: ColorsManager.whiteColor),
-                        ),
-                        Expanded(
-                          child: Container(
-                            height: size.height * 0.05,
-                            width: double.infinity,
-                            margin: EdgeInsetsDirectional.symmetric(horizontal: 20),
-
-                            child: CustomTextFormField(
-                              // hintTxt: getTranslated(context, 'Search'),
-                              hintStyle: TextStyle(
-                                fontFamily: FontManager.fontFamilyAPP,
-                                color: ColorsManager.whiteColor,
-                                fontWeight: FontWightManager.fontWeightLight,
-                                fontSize: AppSize.s15.sp,
-                              ),
-                              radius: AppSize.s20.r,
-                              colorBorder: Colors.transparent,
-                              prefexIcon: Icons.search,
-                              prefexIconColor: ColorsManager.whiteColor,
-                              fillColor: Colors.black54,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+        Padding(
+          padding: EdgeInsets.only(left: AppSize.s15, right: AppSize.s15),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppSize.s20.r),
                 ),
-                SizedBox(height: AppSize.s10),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(AppSize.s20.r),
-                  ),
+                child: Center(
                   child: Row(
                     children: [
                       Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppSize.s20),
-                        child: SizedBox(),
+                        padding:
+                        EdgeInsets.symmetric(horizontal: AppSize.s10),
+                        child: Icon(Icons.arrow_back,
+                            color: ColorsManager.whiteColor),
                       ),
                       Expanded(
-                        child: Container(
-                          height: size.height * 0.05,
-                          width: double.infinity,
-                          padding: EdgeInsets.symmetric(horizontal: AppSize.s15),
-                          margin: EdgeInsets.symmetric(horizontal: 20),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.5),
-                            borderRadius: BorderRadius.circular(AppSize.s12.r),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              dropdownColor: Colors.black.withOpacity(0.5),
-                              isExpanded: true,
-                              value: cubit.selectedCategory,
-                              items: cubit.categories
-                                  .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(
-                                  e,
-                                  style: TextStyle(
-                                      color: ColorsManager.whiteColor),
-                                ),
-                              ))
-                                  .toList(),
-                              onChanged: (newValue) {
-                                if (newValue != null) {
-                                  cubit.changeCategory(newValue);
-                                }
-                              },
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20),
+                          child: CustomTextFormField(
+                            size: Size(double.infinity, size.height * 0.05),
+                            controller: _searchController,
+                            hintStyle: TextStyle(
+                              fontFamily: FontManager.fontFamilyAPP,
+                              color: ColorsManager.whiteColor,
+                              fontWeight: FontWightManager.fontWeightLight,
+                              fontSize: AppSize.s15.sp,
                             ),
+                            radius: AppSize.s10.r,
+                            colorBorder: Colors.transparent,
+                            prefixIcon: Icons.search,
+                           prefixIconColor: Colors.white,
+                            fillColor: Colors.black.withOpacity(0.5),
+                            onSubmitted: (value) => cubit.searchMovies(value),
+                            cursorColor: Colors.white,
                           ),
                         ),
                       ),
+
                     ],
                   ),
-                )
-              ],
-            ),
+                ),
+              ),
+              SizedBox(height: AppSize.s10),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppSize.s20.r),
+                ),
+                child: Row(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: AppSize.s20),
+                      child: SizedBox(),
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: size.height * 0.05,
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(horizontal: AppSize.s15),
+                        margin: EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(AppSize.s12.r),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            dropdownColor: Colors.black.withOpacity(0.5),
+                            isExpanded: true,
+                            value: cubit.selectedCategory,
+                            items: cubit.categories
+                                .map((e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(
+                                e,
+                                style: TextStyle(
+                                    color: ColorsManager.whiteColor),
+                              ),
+                            ))
+                                .toList(),
+                            onChanged: (newValue) {
+                              if (newValue != null) {
+                                cubit.changeCategory(newValue);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
           ),
         ),
         SizedBox(height: size.height * 0.03),
         Expanded(
-          child: GridView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 0.6,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-            ),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              bool isFavorite = cubit.isFavorite(index);
-              return Column(
-                children: [
-                  GestureDetector(
-                    onTap: () async {
-                      final result = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => MovieDetailScreen(index: index),
-                        ),
-                      );
-                      if (result != null) {
-                        setState(() {
-                          widget.isFav = result['isFav'];
-                          widget.id = result['id'];
-                        });
-                        log('Updated: isFav = ${widget.isFav}, id = ${widget.id}');
-                      }
-                    },
-                    child: Stack(
-                      children: [
-                        Container(
-                          height: 130.h,
-                          width: 100.w,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(AppSize.s15.r),
-                            image: DecorationImage(
-                              image: AssetImage('assets/images/movie.png'),
-                              fit: BoxFit.cover,
+          child: BlocBuilder<MovieCubit, MovieState>(
+            builder: (context, state) {
+            //  log('here ui ${cubit.filteredMovies}');
+              final movies = cubit.filteredMovies.isNotEmpty || _searchController.text.isNotEmpty
+                  ? cubit.filteredMovies
+                  : cubit.allMovies;
+              return GridView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 0.6,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: movies.length,
+              itemBuilder: (context, index) {
+                return Column(
+                  children: [
+                    GestureDetector(
+                      onTap: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MovieDetailScreen(index: index),
+                          ),
+                        );
+                        if (result != null) {
+                          setState(() {
+                            widget.isFav = result['isFav'];
+                            widget.id = result['id'];
+                          });
+                          log('Updated: isFav = ${widget.isFav}, id = ${widget.id}');
+                        }
+                      },
+                      child: Stack(
+                        children: [
+                          Container(
+                            height: 130.h,
+                            width: 100.w,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(AppSize.s15.r),
+                              image: DecorationImage(
+                                image: AssetImage('assets/images/movie.png'),
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
-                        ),
-                        (widget.isFav == true && widget.id == index)
-                            ? Positioned(
-                          top: 5,
-                          right: 5,
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.favorite,
-                              color: Colors.red,
+                          (widget.isFav == true && widget.id == index)
+                              ? Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.favorite,
+                                color: Colors.white,
+                                size: 28,
+                              ),
+                              onPressed: () {},
                             ),
-                            onPressed: () {},
-                          ),
-                        )
-                            : const SizedBox.shrink(),
-                      ],
+                          )
+                              : const SizedBox.shrink(),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 10.h),
-                  Text(items[index],
-                      style: getRegularTitleStyle(
-                          color: ColorsManager.whiteColor,
-                          fontSize: AppSize.s12.sp)),
-                ],
-              );
+                    SizedBox(height: 10.h),
+                    Text(movies[index],
+                        style: getRegularTitleStyle(
+                            color: ColorsManager.whiteColor,
+                            fontSize: AppSize.s12.sp)),
+                  ],
+                );
+              },
+            );
             },
           ),
         ),

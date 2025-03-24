@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:wish/presentation/resources/colors-manager.dart';
 import 'package:wish/presentation/resources/constants/custom-staticwidget.dart';
+import 'package:wish/presentation/screens/Live/live_view.dart';
 import 'package:wish/presentation/screens/More/playlists_view.dart';
 import 'package:wish/presentation/screens/More/settings_view.dart';
 
@@ -20,7 +21,7 @@ class MoreView extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => NormalNav(ctx: context,screen: BottomNavBar()),
         ),
         title: const Text('More', style: TextStyle(color: Colors.white)),
         centerTitle: true,

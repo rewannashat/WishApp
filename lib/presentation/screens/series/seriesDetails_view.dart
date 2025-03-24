@@ -12,6 +12,7 @@ import '../../resources/constants/custom-button-constant.dart';
 import '../../resources/font-manager.dart';
 import '../../resources/styles-manager.dart';
 import '../BottomNav/bottomnav_cubit.dart';
+import '../BottomNav/bottomnav_state.dart';
 import '../BottomNav/bottomnavbar_view.dart';
 
 class SeriesDetailsView extends StatelessWidget {
@@ -25,7 +26,7 @@ class SeriesDetailsView extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         extendBodyBehindAppBar: true,
-        backgroundColor: Colors.black54,
+        backgroundColor:  Colors.black87,
         body: Stack(
           children: [
             Column(
@@ -275,33 +276,40 @@ class SeriesDetailsView extends StatelessWidget {
                 ),
               ],
             ),
-            Align(
+          /*  Align(
               alignment: Alignment.bottomCenter,
-              child: Container(
-                margin: EdgeInsets.all(16),
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black45,
-                      blurRadius: 10,
-                      offset: Offset(0, -2),
+              child: BlocBuilder<BottomNavBarCubit, BottomNavBarState>(
+                builder: (context, state) {
+                  final cubit = BottomNavBarCubit.get(context);
+                  return Container(
+                    margin: EdgeInsets.all(16),
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black45,
+                          blurRadius: 10,
+                          offset: Offset(0, -2),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildNavItem(Icons.live_tv, 'Live', 0, cubit),
-                    _buildNavItem(Icons.movie, 'Movie', 1, cubit),
-                    _buildNavItem(Icons.tv, 'Series', 2, cubit),
-                    _buildNavItem(Icons.more_horiz, 'More', 3, cubit),
-                  ],
-                ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildNavItem(Icons.live_tv, 'Live', 0, cubit),
+                        _buildNavItem(Icons.movie, 'Movie', 1, cubit),
+                        _buildNavItem(Icons.tv, 'Series', 2, cubit),
+                        _buildNavItem(Icons.more_horiz, 'More', 3, cubit),
+                      ],
+                    ),
+                  );
+                },
               ),
-            ),
+            )*/
+
+
           ],
         ),
       ),
@@ -329,7 +337,9 @@ class SeriesDetailsView extends StatelessWidget {
   Widget _buildNavItem(IconData icon, String label, int index, BottomNavBarCubit cubit) {
     bool isSelected = cubit.currentIndex == index;
     return GestureDetector(
-      onTap: () => cubit.changePage(index),
+      onTap: () {
+        cubit.changePage(index);
+      },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

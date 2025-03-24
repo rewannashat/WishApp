@@ -23,7 +23,7 @@ class BottomNavBar extends StatelessWidget {
           return Stack(
             children: [
               Container(
-                color:  Colors.black87,
+                color: Colors.black87,
                 child: cubit.screens[cubit.currentIndex],
               ),
               Align(
@@ -45,10 +45,10 @@ class BottomNavBar extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildNavItem(Icons.live_tv, 'Live', 0, cubit),
-                      _buildNavItem(Icons.movie, 'Movie', 1, cubit),
-                      _buildNavItem(Icons.tv, 'Series', 2, cubit),
-                      _buildNavItem(Icons.more_horiz, 'More', 3, cubit),
+                      _buildNavItem('assets/images/live.png', 'Live', 0, cubit),
+                      _buildNavItem('assets/images/movieimage.png', 'Movie', 1, cubit),
+                      _buildNavItem('assets/images/Vector.png', 'Series', 2, cubit),
+                      _buildNavItem('assets/images/more.png', 'More', 3, cubit),
                     ],
                   ),
                 ),
@@ -60,14 +60,14 @@ class BottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(IconData icon, String label, int index, BottomNavBarCubit cubit) {
+  Widget _buildNavItem(String image, String label, int index, BottomNavBarCubit cubit) {
     bool isSelected = cubit.currentIndex == index;
     return GestureDetector(
       onTap: () => cubit.changePage(index),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: isSelected ? ColorsManager.blackColor : ColorsManager.greyColor),
+          Image.asset(image ,color: isSelected ? ColorsManager.blackColor : ColorsManager.greyColor ),
           Text(
             label,
             style: TextStyle(
