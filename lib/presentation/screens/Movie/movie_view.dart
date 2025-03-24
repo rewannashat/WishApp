@@ -98,49 +98,47 @@ class _MovieViewState extends State<MovieView> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(AppSize.s20.r),
                   ),
-                  child: Center(
-                    child: Row(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: AppSize.s20),
-                          child: SizedBox(),
-                        ),
-                        Expanded(
-                          child: Container(
-                            height: size.height * 0.05,
-                            width: double.infinity,
-                            padding: EdgeInsets.symmetric(horizontal: AppSize.s15),
-                            margin: EdgeInsets.symmetric(horizontal: 20),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.5),
-                              borderRadius: BorderRadius.circular(AppSize.s12.r),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                dropdownColor: Colors.black.withOpacity(0.5),
-                                isExpanded: true,
-                                value: cubit.selectedCategory,
-                                items: cubit.categories
-                                    .map((e) => DropdownMenuItem(
-                                  value: e,
-                                  child: Text(
-                                    e,
-                                    style: TextStyle(
-                                        color: ColorsManager.whiteColor),
-                                  ),
-                                ))
-                                    .toList(),
-                                onChanged: (newValue) {
-                                  if (newValue != null) {
-                                    cubit.changeCategory(newValue);
-                                  }
-                                },
-                              ),
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: AppSize.s20),
+                        child: SizedBox(),
+                      ),
+                      Expanded(
+                        child: Container(
+                          height: size.height * 0.05,
+                          width: double.infinity,
+                          padding: EdgeInsets.symmetric(horizontal: AppSize.s15),
+                          margin: EdgeInsets.symmetric(horizontal: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(AppSize.s12.r),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              dropdownColor: Colors.black.withOpacity(0.5),
+                              isExpanded: true,
+                              value: cubit.selectedCategory,
+                              items: cubit.categories
+                                  .map((e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(
+                                  e,
+                                  style: TextStyle(
+                                      color: ColorsManager.whiteColor),
+                                ),
+                              ))
+                                  .toList(),
+                              onChanged: (newValue) {
+                                if (newValue != null) {
+                                  cubit.changeCategory(newValue);
+                                }
+                              },
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 )
               ],
