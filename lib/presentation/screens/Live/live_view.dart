@@ -48,7 +48,8 @@ class LiveView extends StatelessWidget {
                       Expanded(
                         child: Container(
                           height: size.height * 0.05,
-                          width: double.infinity,
+                          //width: size.width * 0.08,
+                          margin: EdgeInsetsDirectional.symmetric(horizontal: 20),
                           child: CustomTextFormField(
                            // hintTxt: getTranslated(context, 'Search'),
                             hintStyle: TextStyle(
@@ -70,44 +71,62 @@ class LiveView extends StatelessWidget {
                 ),
               ),
               SizedBox(height: AppSize.s10),
-              BlocBuilder<LiveCubit, Set<int>>(
-                builder: (context, state) {
-                  final cubit = context.read<LiveCubit>();
-                  return Center(
-                    child: Container(
-                      height: size.height * 0.05,
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(horizontal: AppSize.s15),
-                      margin: EdgeInsets.symmetric(horizontal: 20),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(AppSize.s12.r),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppSize.s20.r),
+                ),
+                child: Center(
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: AppSize.s20),
+                        child: SizedBox(),
                       ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          dropdownColor: Colors.black.withOpacity(0.5),
-                          isExpanded: true,
-                          value: cubit.selectedCategory,
-                          items: cubit.categories
-                              .map((e) => DropdownMenuItem(
-                            value: e,
-                            child: Text(
-                              e,
-                              style: TextStyle(color: ColorsManager.whiteColor),
-                            ),
-                          ))
-                              .toList(),
-                          onChanged: (newValue) {
-                            if (newValue != null) {
-                              cubit.changeCategory(newValue);
-                            }
+                      Expanded(
+                        child:BlocBuilder<LiveCubit, Set<int>>(
+                          builder: (context, state) {
+                            final cubit = context.read<LiveCubit>();
+                            return Center(
+                              child: Container(
+                                height: size.height * 0.05,
+                                width: double.infinity,
+                                padding: EdgeInsets.symmetric(horizontal: AppSize.s15),
+                                margin: EdgeInsets.symmetric(horizontal: 20),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(AppSize.s12.r),
+                                ),
+                                child: DropdownButtonHideUnderline(
+                                  child: DropdownButton<String>(
+                                    dropdownColor: Colors.black.withOpacity(0.5),
+                                    isExpanded: true,
+                                    value: cubit.selectedCategory,
+                                    items: cubit.categories
+                                        .map((e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(
+                                        e,
+                                        style: TextStyle(color: ColorsManager.whiteColor),
+                                      ),
+                                    ))
+                                        .toList(),
+                                    onChanged: (newValue) {
+                                      if (newValue != null) {
+                                        cubit.changeCategory(newValue);
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ),
+                            );
                           },
                         ),
                       ),
-                    ),
-                  );
-                },
+                    ],
+                  ),
+                ),
               ),
+
             ],
           ),
         ),
@@ -126,70 +145,19 @@ class LiveView extends StatelessWidget {
             itemBuilder: (context, index) {
               return Column(
                 children: [
-                  Stack(
-                    children: [
-                      Container(
-                        height: 130.h,
-                        width: 100.w,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(
-                              AppSize.s15.r),
-                          image: DecorationImage(
-                            image: AssetImage(
-                                'assets/images/bein.png'),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+                  Container(
+                    height: 130.h,
+                    width: 100.w,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(
+                          AppSize.s15.r),
+                      image: DecorationImage(
+                        image: AssetImage(
+                            'assets/images/bein.png'),
+                        fit: BoxFit.cover,
                       ),
-                      Positioned(
-                        bottom: 5,
-                        right: 5,
-                        child: GestureDetector(
-                          onTap: () {
-                            context
-                                .read<LiveCubit>()
-                                .toggleFavorite(index);
-                            toast(
-                              msg: context
-                                  .read<LiveCubit>()
-                                  .state
-                                  .contains(index)
-                                  ? 'Added to favorites'
-                                  : 'Removed from favorites',
-                              state: StatusCase.SUCCES,
-                            );
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black54,
-                                  blurRadius: 6.0,
-                                  spreadRadius: 2.0,
-                                ),
-                              ],
-                            ),
-                            child: BlocBuilder<LiveCubit,
-                                Set<int>>(
-                              builder: (context, favorites) {
-                                return Icon(
-                                  favorites.contains(index)
-                                      ? Icons.favorite
-                                      : Icons.favorite,
-                                  color:
-                                  favorites.contains(index)
-                                      ? Colors.red
-                                      : Colors.white,
-                                  size: AppSize.s30.sp,
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                      )
-                    ],
+                    ),
                   ),
                   SizedBox(height: 10.h),
                   Text(items[index],

@@ -8,14 +8,14 @@ class LiveCubit extends Cubit<Set<int>> {
   LiveCubit() : super({});
 
 
-  //== Fav Icon LOGIC ==//
+  /*//== Fav Icon LOGIC ==//
   void toggleFavorite(int index) {
     if (state.contains(index)) {
       emit(Set.from(state)..remove(index));
     } else {
       emit(Set.from(state)..add(index));
     }
-  }
+  }*/
 
   //== Category LOGIC ==//
   final List<String> categories = ['Bein Sport', 'Smart', 'Tv', 'LiveTv'];

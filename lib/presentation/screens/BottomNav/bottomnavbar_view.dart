@@ -23,17 +23,7 @@ class BottomNavBar extends StatelessWidget {
           return Stack(
             children: [
               Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black54,
-                      Colors.black87,
-                      Colors.black54,
-                    ],
-                  ),
-                ),
+                color:  Colors.black87,
                 child: cubit.screens[cubit.currentIndex],
               ),
               Align(
@@ -46,7 +36,7 @@ class BottomNavBar extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black45,
+                        color: Colors.grey,
                         blurRadius: 10,
                         offset: Offset(0, -2),
                       ),
