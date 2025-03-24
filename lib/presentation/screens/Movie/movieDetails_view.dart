@@ -45,144 +45,170 @@ class MovieDetailScreen extends StatelessWidget {
             ],
           ),
           extendBodyBehindAppBar: true,
-          body: Stack(
-            children: [
-              Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black54,
-                      Colors.black87,
-                      Colors.black54,
+          backgroundColor:  Colors.black54,
+          body: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Stack(
+                  children: [
+                    Image.asset(
+                      'assets/images/img.png',
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.7), // Shadow color
+                              blurRadius: 10,
+                              offset: Offset(0, 4), // Shadow direction: horizontal, vertical
+                            ),
+                          ],
+                        ),
+                        child: Padding(
+                          padding: EdgeInsetsDirectional.symmetric(vertical: 10, horizontal: 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                '404 رحلة',
+                                style: getSemiBoldTextStyle(
+                                  color: ColorsManager.whiteColor,
+                                  fontSize: FontSize.s15.sp,
+                                ),
+                              ),
+                              SizedBox(height: 5.h),
+                              Text(
+                                'قبل أيام من سفرها إلى (مكة) لأداء فريضة الحج، تتورط غادة في مشكلة طارئة... ',
+                                textDirection: TextDirection.rtl,
+                                style: getRegularTextStyle(
+                                  color: ColorsManager.whiteColor,
+                                  fontSize: FontSize.s12.sp,
+                                ),
+                              ),
+                              SizedBox(height: 5.h),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    "عائلي",
+                                    style: getRegularTextStyle(
+                                      color: ColorsManager.whiteColor,
+                                      fontSize: FontSize.s12.sp,
+                                    ),
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  Text("|", style: TextStyle(color: Colors.white70, fontSize: 14)),
+                                  SizedBox(width: 6.w),
+                                  Text(
+                                    "سينمائي",
+                                    style: getRegularTextStyle(
+                                      color: ColorsManager.whiteColor,
+                                      fontSize: FontSize.s12.sp,
+                                    ),
+                                  ),
+                                  SizedBox(width: 6.w),
+                                  Text("|", style: TextStyle(color: Colors.white70, fontSize: 14)),
+                                  SizedBox(width: 6.w),
+                                  Text(
+                                    "أكشن",
+                                    style: getRegularTextStyle(
+                                      color: ColorsManager.whiteColor,
+                                      fontSize: FontSize.s12.sp,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 15.h),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Icon(Icons.star, color: Colors.amber),
+                                  Icon(Icons.star, color: Colors.amber),
+                                  Icon(Icons.star, color: Colors.amber),
+                                  Icon(Icons.star, color: Colors.amber),
+                                  Icon(Icons.star_border, color: Colors.amber),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16),
+                Center(
+                  child: Column(
+                    children: [
+                      CustomButton(
+                        width: 300.w,
+                        high: 40.h,
+                        txt: getTranslated(context, 'Watch'),
+                        fontSize: FontSize.s15.sp,
+                        colorTxt: ColorsManager.whiteColor,
+                        colorButton: ColorsManager.buttonColor,
+                        outLineBorder: false,
+                        fontWeight: FontWightManager.fontWeightRegular,
+                        borderRadius: 10.r,
+                        fontFamily: FontManager.fontFamilyAPP,
+                        onPressed: () {},
+                      ),
+                      SizedBox(height: 10.h),
+                      CustomButton(
+                        width: 300.w,
+                        high: 40.h,
+                        txt: getTranslated(context, 'Trailer'),
+                        fontSize: FontSize.s15.sp,
+                        colorTxt: ColorsManager.whiteColor,
+                        colorButton: ColorsManager.buttonColor,
+                        outLineBorder: false,
+                        fontWeight: FontWightManager.fontWeightRegular,
+                        borderRadius: 10.r,
+                        fontFamily: FontManager.fontFamilyAPP,
+                        onPressed: () {},
+                      ),
                     ],
                   ),
                 ),
-              ),
-              SingleChildScrollView(
-                child: Column(
+                SizedBox(height: 24),
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Stack(
-                      children: [
-                        Image.asset(
-                          'assets/images/img.png',
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                        Positioned.fill(
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                            child: Container(color: Colors.black.withOpacity(0.3)),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 20,
-                          left: 0,
-                          right: 0,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  '404 رحلة',
-                                  style: getSemiBoldTextStyle(
-                                    color: ColorsManager.whiteColor,
-                                    fontSize: FontSize.s15.sp,
-                                  ),
-                                ),
-                                SizedBox(height: 5.h),
-                                Text(
-                                  'قبل أيام من سفرها إلى (مكة) لأداء فريضة الحج، تتورط غادة في مشكلة طارئة...',
-                                  textDirection: TextDirection.rtl,
-                                  style: getRegularTextStyle(
-                                    color: ColorsManager.whiteColor,
-                                    fontSize: FontSize.s12.sp,
-                                  ),
-                                ),
-                                SizedBox(height: 15.h),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: const [
-                                    Icon(Icons.star, color: Colors.amber),
-                                    Icon(Icons.star, color: Colors.amber),
-                                    Icon(Icons.star, color: Colors.amber),
-                                    Icon(Icons.star, color: Colors.amber),
-                                    Icon(Icons.star_border, color: Colors.amber),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    Center(
-                      child: Column(
-                        children: [
-                          CustomButton(
-                            width: 300.w,
-                            high: 40.h,
-                            txt: getTranslated(context, 'Watch'),
-                            fontSize: FontSize.s15.sp,
-                            colorTxt: ColorsManager.whiteColor,
-                            colorButton: ColorsManager.buttonColor,
-                            outLineBorder: false,
-                            fontWeight: FontWightManager.fontWeightRegular,
-                            borderRadius: 10.r,
-                            fontFamily: FontManager.fontFamilyAPP,
-                            onPressed: () {},
-                          ),
-                          SizedBox(height: 10.h),
-                          CustomButton(
-                            width: 300.w,
-                            high: 40.h,
-                            txt: getTranslated(context, 'Trailer'),
-                            fontSize: FontSize.s15.sp,
-                            colorTxt: ColorsManager.whiteColor,
-                            colorButton: ColorsManager.buttonColor,
-                            outLineBorder: false,
-                            fontWeight: FontWightManager.fontWeightRegular,
-                            borderRadius: 10.r,
-                            fontFamily: FontManager.fontFamilyAPP,
-                            onPressed: () {},
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 24),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      padding: const EdgeInsetsDirectional.symmetric(horizontal: 10),
+                      child: Text(
+                        'Cast',
+                        style: getRegularTextStyle(
+                          color: ColorsManager.whiteColor,
+                          fontSize: 20.sp,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12.h),
+                    Padding(
+                      padding: const EdgeInsetsDirectional.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          Text(
-                            'Cast',
-                            style: getBoldTextStyle(
-                              color: ColorsManager.whiteColor,
-                              fontSize: 20.sp,
-                            ),
-                          ),
-                          SizedBox(height: 12.h),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildCastItem('Mona Zaki', 'assets/images/cast.png'),
-                              _buildCastItem('Sheren Reda', 'assets/images/casts.png'),
-                              _buildCastItem('Mohamed Farag', 'assets/images/person.png'),
-                            ],
-                          ),
+                          _buildCastItem('Mona Zaki', 'assets/images/cast.png'),
+                          _buildCastItem('Sheren Reda', 'assets/images/casts.png'),
+                          _buildCastItem('Mohamed Farag', 'assets/images/person.png'),
                         ],
                       ),
                     ),
-                    SizedBox(height: 100),
                   ],
                 ),
-              ),
-            ],
+                SizedBox(height: 100),
+              ],
+            ),
           ),
         );
       },
