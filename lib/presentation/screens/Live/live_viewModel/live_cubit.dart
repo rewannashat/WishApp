@@ -28,6 +28,11 @@ class LiveCubit extends Cubit<LiveStates> {
     emit(ChangeCategoryState());
   }
 
+  void toggleDropdownn(bool isOpen) {
+    isDropdownOpen = isOpen;
+    emit(ChangeCategoryState());
+  }
+
   // ====== Search LOGIC ======
   List<String> allLive = [
     'Bein Sport', 'Smart', 'Tv','LiveTv','LiveTv3','LiveTv','LiveTv3','LiveTv','LiveTv3'

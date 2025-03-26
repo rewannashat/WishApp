@@ -16,9 +16,17 @@ import '../BottomNav/bottomnavbar_view.dart';
 import 'live_viewModel/live_cubit.dart';
 import 'live_viewModel/live_states.dart';
 
-class LiveView extends StatelessWidget {
+class LiveView extends StatefulWidget {
   const LiveView({super.key});
 
+  @override
+  State<LiveView> createState() => _LiveViewState();
+}
+
+class _LiveViewState extends State<LiveView> {
+  OverlayEntry? _overlayEntry;
+  final LayerLink _layerLink = LayerLink();
+  final FocusNode _focusNode = FocusNode();
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -30,6 +38,8 @@ class LiveView extends StatelessWidget {
     // data
     LiveCubit cubit = LiveCubit.get(context);
     final GlobalKey dropdownKey = GlobalKey();
+
+
 
 
     // input
@@ -49,36 +59,54 @@ class LiveView extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: Icon(Icons.arrow_back, color: ColorsManager.whiteColor , size: 30.sp,),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => {},
                   ),
                   SizedBox(width: 2.w), // Adjust spacing
                   Expanded(
-                    child: Container(
-                      height: 33.h, width: 280.w,
-                      margin: EdgeInsetsDirectional.symmetric(horizontal: 15),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        color: Colors.black.withOpacity(0.5),
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        cursorColor: Colors.white,
-                        style: TextStyle(
-                          color: ColorsManager.whiteColor,
-                          fontSize: AppSize.s15.sp,
+                    child: CompositedTransformTarget(
+                      link: _layerLink,
+                      child: Container(
+                       // height: 33.h,
+                        width: 280.w,
+                        margin: EdgeInsetsDirectional.symmetric(horizontal: 15),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                          color: Colors.black.withOpacity(0.5),
                         ),
-                        decoration: InputDecoration(
-                          hintText: 'Search',
-                          hintStyle: TextStyle(
-                            fontFamily: FontManager.fontFamilyAPP,
-                            color: ColorsManager.whiteColor,
-                            fontWeight: FontWightManager.fontWeightLight,
-                            fontSize: AppSize.s15.sp,
-                          ),
-                          border: InputBorder.none,
-                          prefixIcon: Icon(Icons.search, color: Colors.white),
+                        child: Column(
+                          children: [
+                            TextField(
+                              controller: _searchController,
+                              focusNode: _focusNode,
+                              cursorColor: Colors.white,
+                              style: TextStyle(
+                                color: ColorsManager.whiteColor,
+                                fontSize: AppSize.s15.sp,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: 'Search',
+                                hintStyle: TextStyle(
+                                  fontFamily: FontManager.fontFamilyAPP,
+                                  color: ColorsManager.whiteColor,
+                                  fontWeight: FontWightManager.fontWeightLight,
+                                  fontSize: AppSize.s15.sp,
+                                ),
+                                border: InputBorder.none,
+                                prefixIcon: Icon(Icons.search, color: Colors.white),
+                              ),
+                              onChanged: (value) {
+                                cubit.searchLive(value);
+                                if (value.isNotEmpty) {
+                                  _showOverlay(context, cubit);
+                                } else {
+                                  _removeOverlay();
+                                }
+                              },
+                              onSubmitted: (value) => cubit.searchLive(value),
+                            ),
+
+                          ],
                         ),
-                        onSubmitted: (value) => cubit.searchLive(value),
                       ),
                     ),
                   ),
@@ -94,7 +122,7 @@ class LiveView extends StatelessWidget {
                   SizedBox(width: 45.w), // Align with search bar start point
                   Expanded(
                     child: Container(
-                      height: 35.h,width: 280.w,
+                      height: 40.h,width: 280.w,
                       margin: EdgeInsetsDirectional.symmetric(horizontal: 15),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.5),
@@ -210,5 +238,72 @@ class LiveView extends StatelessWidget {
         ],
       ),
     );
+
+
+
   }
+
+  void _showOverlay(BuildContext context, LiveCubit cubit) {
+    _removeOverlay();
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        width: 310.w,
+        child: CompositedTransformFollower(
+          link: _layerLink,
+          showWhenUnlinked: false,
+          offset: Offset(0.0, 50.0),
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: 280.w,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: Column(
+                children: cubit.filteredLive.map((item) {
+                  return InkWell(
+                    onTap: () {
+                      cubit.changeCategory(item);
+                      FocusScope.of(context).unfocus();
+                      _removeOverlay();
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color:item == cubit.selectedCategory ? Colors.grey[700] : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      // height: 33.h,
+                      width: 280.w,
+                      padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+                      child: Text(
+                        item,
+                        style: TextStyle(color: Colors.white, fontSize: 16.0),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    _removeOverlay();
+    super.dispose();
+  }
+
+
+
 }
