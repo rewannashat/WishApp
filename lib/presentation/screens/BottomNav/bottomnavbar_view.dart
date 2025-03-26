@@ -23,7 +23,18 @@ class BottomNavBar extends StatelessWidget {
           return Stack(
             children: [
               Container(
-                color: Colors.black87,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xff161616),
+                      Color(0xff2d2c2c),
+                      Color(0xFF3a3939),
+                      Color(0xFF262626),
+                    ],
+                  ),
+                ),
                 child: cubit.screens[cubit.currentIndex],
               ),
               Align(
@@ -46,8 +57,10 @@ class BottomNavBar extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _buildNavItem('assets/images/live.png', 'Live', 0, cubit),
-                      _buildNavItem('assets/images/Group103.png', 'Movie', 1, cubit),
-                      _buildNavItem('assets/images/Vector.png', 'Series', 2, cubit),
+                      _buildNavItem(
+                          'assets/images/Group103.png', 'Movie', 1, cubit),
+                      _buildNavItem(
+                          'assets/images/Vector.png', 'Series', 2, cubit),
                       _buildNavItem('assets/images/more.png', 'More', 3, cubit),
                     ],
                   ),
@@ -60,18 +73,24 @@ class BottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(String image, String label, int index, BottomNavBarCubit cubit) {
+  Widget _buildNavItem(
+      String image, String label, int index, BottomNavBarCubit cubit) {
     bool isSelected = cubit.currentIndex == index;
     return GestureDetector(
       onTap: () => cubit.changePage(index),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(image ,color: isSelected ? ColorsManager.blackColor : ColorsManager.greyColor ),
+          Image.asset(image,
+              color: isSelected
+                  ? ColorsManager.blackColor
+                  : ColorsManager.greyColor),
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? ColorsManager.blackColor : ColorsManager.greyColor,
+              color: isSelected
+                  ? ColorsManager.blackColor
+                  : ColorsManager.greyColor,
               fontSize: 12.sp,
             ),
           ),

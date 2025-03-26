@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../resources/routes-manager.dart';
@@ -12,13 +13,18 @@ class LiveCubit extends Cubit<LiveStates> {
 
   static LiveCubit get(context) => BlocProvider.of<LiveCubit>(context);
 
-
   //== Category LOGIC ==//
   final List<String> categories = ['Bein Sport', 'Smart', 'Tv', 'LiveTv'];
   String selectedCategory = 'Bein Sport';
+  bool isDropdownOpen = false;
 
   void changeCategory(String newCategory) {
     selectedCategory = newCategory;
+    emit(ChangeCategoryState());
+  }
+
+  void toggleDropdown() {
+    isDropdownOpen = !isDropdownOpen;
     emit(ChangeCategoryState());
   }
 
@@ -42,5 +48,6 @@ class LiveCubit extends Cubit<LiveStates> {
 
 
 
-  }
 
+
+}

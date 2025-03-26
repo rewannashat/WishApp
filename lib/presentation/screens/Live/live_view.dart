@@ -29,6 +29,8 @@ class LiveView extends StatelessWidget {
 
     // data
     LiveCubit cubit = LiveCubit.get(context);
+    final GlobalKey dropdownKey = GlobalKey();
+
 
     // input
     final TextEditingController _searchController = TextEditingController();
@@ -38,101 +40,126 @@ class LiveView extends StatelessWidget {
       builder: (context, state) =>  Column(
         children: [
           SizedBox(height: size.height * 0.05),
-          Padding(
-            padding: EdgeInsets.only(left: AppSize.s15, right: AppSize.s15),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(AppSize.s20.r),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Search Bar
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.arrow_back, color: ColorsManager.whiteColor , size: 30.sp,),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  child: Center(
-                    child: Row(
-                      children: [
-                        Padding(
-                          padding:
-                          EdgeInsets.symmetric(horizontal: AppSize.s10),
-                          child: Icon(Icons.arrow_back,
-                              color: ColorsManager.whiteColor),
+                  SizedBox(width: 2.w), // Adjust spacing
+                  Expanded(
+                    child: Container(
+                      height: 33.h, width: 280.w,
+                      margin: EdgeInsetsDirectional.symmetric(horizontal: 15),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: Colors.black.withOpacity(0.5),
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        cursorColor: Colors.white,
+                        style: TextStyle(
+                          color: ColorsManager.whiteColor,
+                          fontSize: AppSize.s15.sp,
                         ),
-                        Expanded(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20),
-                            child: CustomTextFormField(
-                              size: Size(double.infinity, size.height * 0.05),
-                              controller: _searchController,
-                              hintStyle: TextStyle(
-                                fontFamily: FontManager.fontFamilyAPP,
-                                color: ColorsManager.whiteColor,
-                                fontWeight: FontWightManager.fontWeightLight,
-                                fontSize: AppSize.s15.sp,
-                              ),
-                              radius: AppSize.s10.r,
-                              colorBorder: Colors.transparent,
-                              prefixIcon: Icons.search,
-                              prefixIconColor: Colors.white,
-                              fillColor: Colors.black.withOpacity(0.5),
-                              onSubmitted: (value) => cubit.searchLive(value),
-                              cursorColor: Colors.white,
-                            ),
+                        decoration: InputDecoration(
+                          hintText: 'Search',
+                          hintStyle: TextStyle(
+                            fontFamily: FontManager.fontFamilyAPP,
+                            color: ColorsManager.whiteColor,
+                            fontWeight: FontWightManager.fontWeightLight,
+                            fontSize: AppSize.s15.sp,
                           ),
+                          border: InputBorder.none,
+                          prefixIcon: Icon(Icons.search, color: Colors.white),
                         ),
-
-                      ],
+                        onSubmitted: (value) => cubit.searchLive(value),
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(height: AppSize.s10),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(AppSize.s20.r),
-                  ),
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppSize.s20),
-                        child: SizedBox(),
+                ],
+              ),
+
+              SizedBox(height: AppSize.s10),
+
+              // Dropdown
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(width: 45.w), // Align with search bar start point
+                  Expanded(
+                    child: Container(
+                      height: 35.h,width: 280.w,
+                      margin: EdgeInsetsDirectional.symmetric(horizontal: 15),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(5.r)
                       ),
-                      Expanded(
-                        child: Container(
-                          height: size.height * 0.05,
-                          width: double.infinity,
-                          padding: EdgeInsets.symmetric(horizontal: AppSize.s15),
-                          margin: EdgeInsets.symmetric(horizontal: 20),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.5),
-                            borderRadius: BorderRadius.circular(AppSize.s12.r),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              dropdownColor: Colors.black.withOpacity(0.5),
-                              isExpanded: true,
-                              value: cubit.selectedCategory,
-                              items: cubit.categories
-                                  .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(
-                                  e,
-                                  style: TextStyle(
-                                      color: ColorsManager.whiteColor),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: AppSize.s15),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  dropdownColor: Colors.black.withOpacity(0.5),
+                                  icon: SizedBox.shrink(),
+                                  isExpanded: true,
+                                  isDense: true,
+                                  alignment: Alignment.bottomCenter,
+                                  value: cubit.selectedCategory,
+                                  items: cubit.categories.map((e) => DropdownMenuItem(
+                                    value: e,
+                                    child: Container(
+                                      height: 35.h,width: 250.w,
+                                      color: cubit.selectedCategory == e && cubit.isDropdownOpen ? Colors.black.withOpacity(0.5) : Colors.transparent,
+                                     // padding: EdgeInsets.symmetric(vertical: 5),
+                                      child: Text(
+                                        e,
+                                        style: TextStyle(color: ColorsManager.whiteColor),
+                                      ),
+                                    ),
+                                  )).toList(),
+                                  onChanged: (newValue) {
+                                    if (newValue != null) {
+                                      cubit.changeCategory(newValue);
+                                    }
+                                    cubit.toggleDropdown(); // Toggle dropdown state
+                                  },
                                 ),
-                              ))
-                                  .toList(),
-                              onChanged: (newValue) {
-                                if (newValue != null) {
-                                  cubit.changeCategory(newValue);
-                                }
-                              },
+                              ),
                             ),
                           ),
-                        ),
+                          GestureDetector(
+                            onTap: cubit.toggleDropdown, // Handle tap on the icon
+                            child: Container(
+                              width: 40,
+                              height: 35,
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.7),
+                                borderRadius: BorderRadius.only(
+                                  topRight: Radius.circular(5),
+                                  bottomRight: Radius.circular(5),
+                                ),
+                              ),
+                              child: Icon(
+                                cubit.isDropdownOpen ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                )
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
           SizedBox(height: size.height * 0.03),
           Expanded(
