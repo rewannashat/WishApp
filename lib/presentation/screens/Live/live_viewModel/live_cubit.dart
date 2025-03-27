@@ -14,8 +14,10 @@ class LiveCubit extends Cubit<LiveStates> {
   static LiveCubit get(context) => BlocProvider.of<LiveCubit>(context);
 
   //== Category LOGIC ==//
-  final List<String> categories = ['Bein Sport', 'Smart', 'Tv', 'LiveTv'];
+  final List<String> categories = ['Bein Sport', 'Smart', 'Tv', 'LiveTv','Link','LiveTv9'];
   String selectedCategory = 'Bein Sport';
+
+
   bool isDropdownOpen = false;
 
   void changeCategory(String newCategory) {
@@ -28,6 +30,7 @@ class LiveCubit extends Cubit<LiveStates> {
     emit(ChangeCategoryState());
   }
 
+
   void toggleDropdownn(bool isOpen) {
     isDropdownOpen = isOpen;
     emit(ChangeCategoryState());
@@ -35,7 +38,7 @@ class LiveCubit extends Cubit<LiveStates> {
 
   // ====== Search LOGIC ======
   List<String> allLive = [
-    'Bein Sport', 'Smart', 'Tv','LiveTv','LiveTv3','LiveTv','LiveTv3','LiveTv','LiveTv3'
+    'Bein Sport', 'Smart', 'Tv','LiveTv','LiveTv9','Link'
   ];
   List<String> filteredLive = [];
 
