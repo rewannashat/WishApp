@@ -31,11 +31,6 @@ class LiveCubit extends Cubit<LiveStates> {
   }
 
 
-  void toggleDropdownn(bool isOpen) {
-    isDropdownOpen = isOpen;
-    emit(ChangeCategoryState());
-  }
-
   // ====== Search LOGIC ======
   List<String> allLive = [
     'Bein Sport', 'Smart', 'Tv','LiveTv','LiveTv9','Link'
@@ -54,6 +49,16 @@ class LiveCubit extends Cubit<LiveStates> {
     emit(SearchLiveState(filteredLive));
   }
 
+
+  // ===== Placement LOGIC ===== //
+  void reorderItems(int oldIndex, int newIndex) {
+    if (oldIndex < 0 || newIndex < 0 || oldIndex >= filteredLive.length || newIndex >= filteredLive.length) return;
+
+    final item = filteredLive.removeAt(oldIndex); // Remove item (title + image)
+    filteredLive.insert(newIndex, item); // Insert at new position
+
+    emit(LiveUpdatedState(List.from(filteredLive))); // Emit updated state
+  }
 
 
 

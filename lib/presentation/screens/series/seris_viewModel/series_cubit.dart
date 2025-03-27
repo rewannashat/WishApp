@@ -93,4 +93,11 @@ class SeriesCubit extends Cubit<SeriesState> {
   }
 
 
+  bool isDropdownOpen = false;
+  void toggleDropdown() {
+    isDropdownOpen = !isDropdownOpen;
+    emit(ChangeCategoryState());
+  }
+
+
 }

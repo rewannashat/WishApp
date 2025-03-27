@@ -75,4 +75,26 @@ class MovieCubit extends Cubit<MovieState> {
     emit(SearchMoviesState(filteredMovies));
   }
 
+  bool isDropdownOpen = false;
+  void toggleDropdown() {
+    isDropdownOpen = !isDropdownOpen;
+    emit(ChangeCategoryState());
+  }
+
+  // ===== Placement LOGIC ===== //
+  void reorderItems(int oldIndex, int newIndex) {
+    if (filteredMovies.isEmpty || oldIndex == newIndex) return;
+
+    if (oldIndex >= filteredMovies.length || newIndex >= filteredMovies.length) {
+      return; // Prevent index errors
+    }
+
+    final item = filteredMovies.removeAt(oldIndex);
+    filteredMovies.insert(newIndex > oldIndex ? newIndex - 1 : newIndex, item);
+
+    emit(MovieUpdatedState(List.from(filteredMovies))); // Update state correctly
+  }
+
+
+
 }

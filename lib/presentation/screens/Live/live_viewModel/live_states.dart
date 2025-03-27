@@ -14,3 +14,7 @@ class SearchLiveState extends LiveStates {
   SearchLiveState(this.filteredLive);
 }
 
+class LiveUpdatedState extends LiveStates {
+  final List<String> updatedLive;
+  LiveUpdatedState(this.updatedLive);
+}

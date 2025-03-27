@@ -103,7 +103,11 @@ class _LiveViewState extends State<LiveView> {
                                   _removeOverlay();
                                 }
                               },
-                              onSubmitted: (value) => cubit.searchLive(value),
+                              onSubmitted: (value) {
+                                cubit.searchLive(value);
+                                FocusScope.of(context).unfocus(); // Close the keyboard
+                                _removeOverlay();  // Close the dropdown
+                              },
                             ),
                           ],
                         ),
@@ -315,7 +319,7 @@ class _LiveViewState extends State<LiveView> {
                 borderRadius: BorderRadius.circular(8.0),
               ),
               child: Column(
-                children: cubit.filteredLive.map((item) {
+                children: cubit.categories.map((item) {
                   return InkWell(
                     onTap: () {
                       cubit.changeCategory(item);
