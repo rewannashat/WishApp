@@ -1,11 +1,10 @@
 import 'dart:ui';
-
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../../../domian/Lang/helper_lang.dart';
 import '../../resources/colors-manager.dart';
 import '../../resources/constants/custom-staticwidget.dart';
@@ -24,344 +23,291 @@ class LiveView extends StatefulWidget {
   State<LiveView> createState() => _LiveViewState();
 }
 
+
 class _LiveViewState extends State<LiveView> {
   OverlayEntry? _overlayEntry;
   final LayerLink _layerLink = LayerLink();
   final FocusNode _focusNode = FocusNode();
+  final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController(); // ScrollController for pagination
 
   @override
-  Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    Locale myLocale = Localizations.localeOf(context);
+  void initState() {
+    super.initState();
+    final cubit = LiveCubit.get(context);
 
-    // Data
-    LiveCubit cubit = LiveCubit.get(context);
-    final GlobalKey dropdownKey = GlobalKey();
+    // Automatically set the default category if categories are available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (cubit.categories.isNotEmpty) {
+        cubit.changeCategory(cubit.categories.first); // Automatically select the first category
+      }
+    });
 
-
-    // input
-    final TextEditingController _searchController = TextEditingController();
-
-    return BlocBuilder<LiveCubit, LiveStates>(
-      builder: (context, state) => Column(
-        children: [
-          SizedBox(height: size.height * 0.05),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Search Bar
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.arrow_back,
-                      color: ColorsManager.whiteColor,
-                      size: 30.sp,
-                    ),
-                    onPressed: () => {},
-                  ),
-                  SizedBox(width: 2.w), // Adjust spacing
-                  Expanded(
-                    child: CompositedTransformTarget(
-                      link: _layerLink,
-                      child: Container(
-                        // height: 33.h,
-                        width: 280.w,
-                        margin: EdgeInsetsDirectional.symmetric(horizontal: 15),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          color: Colors.black.withOpacity(0.5),
-                        ),
-                        child: Column(
-                          children: [
-                            TextField(
-                              controller: _searchController,
-                              focusNode: _focusNode,
-                              cursorColor: Colors.white,
-                              style: TextStyle(
-                                color: ColorsManager.whiteColor,
-                                fontSize: AppSize.s15.sp,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: 'Search',
-                                hintStyle: TextStyle(
-                                  fontFamily: FontManager.fontFamilyAPP,
-                                  color: ColorsManager.whiteColor,
-                                  fontWeight: FontWightManager.fontWeightLight,
-                                  fontSize: AppSize.s15.sp,
-                                ),
-                                border: InputBorder.none,
-                                prefixIcon:
-                                    Icon(Icons.search, color: Colors.white),
-                              ),
-                              onChanged: (value) {
-                                cubit.searchLive(value);
-                                if (value.isNotEmpty) {
-                                  _showOverlay(context, cubit);
-                                } else {
-                                  _removeOverlay();
-                                }
-                              },
-                              onSubmitted: (value) {
-                                cubit.searchLive(value);
-                                FocusScope.of(context).unfocus(); // Close the keyboard
-                                _removeOverlay();  // Close the dropdown
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height: AppSize.s10),
-
-              // Dropdown
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(width: 45.w),
-                  // Align with search bar start point
-                  Expanded(
-                    child: Container(
-                      height: 40.h,
-                      width: 280.w,
-                      margin: EdgeInsetsDirectional.symmetric(horizontal: 15),
-                      padding: EdgeInsetsDirectional.symmetric(horizontal: 10),
-                      decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(5.r)),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton2<String>(
-                          isExpanded: true,
-                          dropdownStyleData: DropdownStyleData(
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.5),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          iconStyleData: IconStyleData(
-                            icon: Icon(Icons.arrow_drop_down, color: Colors.white, size: 24.sp),
-                          ),
-                          barrierColor: Colors.black.withOpacity(0.5),
-                          items: cubit.categories
-                              .map((String item) => DropdownMenuItem<String>(
-                            value: item,
-                            child: Text(
-                              item,
-                              style: TextStyle(fontSize: 14.sp, color: Colors.white),
-                            ),
-                          ))
-                              .toList(),
-                          value: cubit.selectedCategory,
-                          onChanged: (String? value) {
-                            if (value != null) {
-                              cubit.changeCategory(value);
-                            }
-                            cubit.toggleDropdown();
-                          },
-
-                        ),
-                      ),
-                    ),
-                  ),
-
-                 /* Expanded(
-                    child: Container(
-                      height: 40.h,
-                      width: 280.w,
-                      margin: EdgeInsetsDirectional.symmetric(horizontal: 15),
-                      decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(5.r)),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding:
-                                  EdgeInsets.symmetric(horizontal: AppSize.s15),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  dropdownColor: Colors.black.withOpacity(0.5),
-                                  icon: SizedBox.shrink(),
-                                  isExpanded: true,
-                                  isDense: true,
-                                  value: cubit.selectedCategory,
-                                  items: cubit.categories
-                                      .map((e) => DropdownMenuItem(
-                                            value: e,
-                                            child: Container(
-                                              height: 35.h,
-                                              width: 250.w,
-                                              color:
-                                                  cubit.selectedCategory == e &&
-                                                          cubit.isDropdownOpen
-                                                      ? Colors.black
-                                                          .withOpacity(0.5)
-                                                      : Colors.transparent,
-                                              // padding: EdgeInsets.symmetric(vertical: 5),
-                                              child: Text(
-                                                e,
-                                                style: TextStyle(
-                                                    color: ColorsManager
-                                                        .whiteColor),
-                                              ),
-                                            ),
-                                          ))
-                                      .toList(),
-                                  onChanged: (newValue) {
-                                    if (newValue != null) {
-                                      cubit.changeCategory(newValue);
-                                    }
-                                    cubit
-                                        .toggleDropdown(); // Toggle dropdown state
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: cubit.toggleDropdown,
-                            // Handle tap on the icon
-                            child: Container(
-                              width: 40,
-                              height: 35,
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.7),
-                                borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(5),
-                                  bottomRight: Radius.circular(5),
-                                ),
-                              ),
-                              child: Icon(
-                                cubit.isDropdownOpen
-                                    ? Icons.arrow_drop_up
-                                    : Icons.arrow_drop_down,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),*/
-                ],
-              ),
-            ],
-          ),
-          SizedBox(height: size.height * 0.03),
-          Expanded(
-            child: BlocBuilder<LiveCubit, LiveStates>(
-              builder: (context, state) {
-                final lives = cubit.filteredLive.isNotEmpty ||
-                        _searchController.text.isNotEmpty
-                    ? cubit.filteredLive
-                    : cubit.allLive;
-                return GridView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 0.6,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: lives.length,
-                  itemBuilder: (context, index) {
-                    return Column(
-                      children: [
-                        Container(
-                          height: 130.h,
-                          width: 100.w,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(AppSize.s15.r),
-                            image: DecorationImage(
-                              image: AssetImage('assets/images/bein.png'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 10.h),
-                        Text(lives[index],
-                            style: getRegularTitleStyle(
-                                color: ColorsManager.whiteColor,
-                                fontSize: AppSize.s12.sp)),
-                      ],
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showOverlay(BuildContext context, LiveCubit cubit) {
-    _removeOverlay();
-    _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        width: 310.w,
-        child: CompositedTransformFollower(
-          link: _layerLink,
-          showWhenUnlinked: false,
-          offset: Offset(0.0, 50.0),
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              width: 280.w,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: Column(
-                children: cubit.categories.map((item) {
-                  return InkWell(
-                    onTap: () {
-                      cubit.changeCategory(item);
-                      FocusScope.of(context).unfocus();
-                      _removeOverlay();
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: item == cubit.selectedCategory
-                            ? Colors.grey[700]
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      // height: 33.h,
-                      width: 280.w,
-                      padding: EdgeInsets.symmetric(
-                          vertical: 12.0, horizontal: 16.0),
-                      child: Text(
-                        item,
-                        style: TextStyle(color: Colors.white, fontSize: 16.0),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-    Overlay.of(context).insert(_overlayEntry!);
-  }
-
-  void _removeOverlay() {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
+    // Listen to the scroll events to trigger pagination
+    _scrollController.addListener(_scrollListener);
   }
 
   @override
   void dispose() {
-    _focusNode.dispose();
-    _removeOverlay();
+    _scrollController.removeListener(_scrollListener);
     super.dispose();
   }
+
+  // Pagination listener
+  void _scrollListener() {
+    final cubit = LiveCubit.get(context);
+    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+      // If the scroll reaches the bottom, load more streams
+      cubit.getLiveStreams();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Size size = MediaQuery.of(context).size;
+    final cubit = LiveCubit.get(context);
+
+    return BlocBuilder<LiveCubit, LiveStates>(
+      builder: (context, state) {
+        return Column(
+          children: [
+            SizedBox(height: size.height * 0.05),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSearchBar(cubit),
+                SizedBox(height: AppSize.s10),
+                _buildDropdown(cubit),
+              ],
+            ),
+            SizedBox(height: size.height * 0.03),
+            _buildStreamGrid(cubit, state),
+            if (state is GetStreamsLoadingState || state is GetCategoriesLoadingState)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: SpinKitFadingCircle(
+                  color: Colors.white,
+                  size: 50.0,
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildSearchBar(LiveCubit cubit) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: ColorsManager.whiteColor,
+            size: 30.sp,
+          ),
+          onPressed: () {},
+        ),
+        SizedBox(width: 2.w),
+        Expanded(
+          child: CompositedTransformTarget(
+            link: _layerLink,
+            child: Container(
+              width: 280.w,
+              margin: EdgeInsetsDirectional.symmetric(horizontal: 15),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                color: Colors.black.withOpacity(0.5),
+              ),
+              child: TextField(
+                controller: _searchController,
+                focusNode: _focusNode,
+                cursorColor: Colors.white,
+                style: TextStyle(
+                  color: ColorsManager.whiteColor,
+                  fontSize: AppSize.s15.sp,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'Search',
+                  hintStyle: TextStyle(
+                    fontFamily: FontManager.fontFamilyAPP,
+                    color: ColorsManager.whiteColor,
+                    fontWeight: FontWightManager.fontWeightLight,
+                    fontSize: AppSize.s15.sp,
+                  ),
+                  border: InputBorder.none,
+                  prefixIcon: Icon(Icons.search, color: Colors.white),
+                ),
+                onChanged: (value) {
+                  cubit.searchLive(value);
+                },
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdown(LiveCubit cubit) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(width: 45.w),
+        Expanded(
+          child: cubit.categories.isEmpty
+              ? Container(
+            height: 40.h,
+            width: 280.w,
+            margin: EdgeInsets.symmetric(horizontal: 15),
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(5.r),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton2<Map<String, dynamic>>(
+                isExpanded: true,
+                dropdownStyleData: DropdownStyleData(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                iconStyleData: IconStyleData(
+                  icon: Icon(Icons.arrow_drop_down, color: Colors.white, size: 24.sp),
+                ),
+                barrierColor: Colors.black.withOpacity(0.5),
+                items: [
+                  DropdownMenuItem<Map<String, dynamic>>(
+                    value: null,
+                    child: Text(
+                      'No Data Available',
+                      style: TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+                value: null,
+                onChanged: null,
+              ),
+            ),
+          )
+              : Container(
+            height: 40.h,
+            width: 280.w,
+            margin: EdgeInsets.symmetric(horizontal: 15),
+            padding: EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(5.r),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton2<Map<String, dynamic>>(
+                isExpanded: true,
+                dropdownStyleData: DropdownStyleData(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                iconStyleData: IconStyleData(
+                  icon: Icon(Icons.arrow_drop_down, color: Colors.white, size: 24.sp),
+                ),
+                barrierColor: Colors.black.withOpacity(0.5),
+                items: cubit.categories.map((category) {
+                  return DropdownMenuItem<Map<String, dynamic>>(
+                    value: category,
+                    child: Text(
+                      category['category_name'],
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  );
+                }).toList(),
+                value: cubit.categories.isNotEmpty
+                    ? cubit.categories.firstWhere(
+                      (c) => c['category_id'] == cubit.selectedCategoryId,
+                  orElse: () => cubit.categories.first,
+                )
+                    : null,
+                onChanged: (Map<String, dynamic>? value) {
+                  if (value != null) {
+                    cubit.changeCategory(value);
+                  }
+                  cubit.toggleDropdown();
+                },
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStreamGrid(LiveCubit cubit, LiveStates state) {
+    final lives = cubit.filteredLive.isNotEmpty || _searchController.text.isNotEmpty
+        ? cubit.filteredLive
+        : cubit.allLive;
+
+    if (lives.isEmpty) {
+      return Center(
+        child: state is GetStreamsLoadingState
+            ? SpinKitFadingCircle(
+          color: Colors.white,
+          size: 50.0,
+        ) : Text('No streams available.', style: TextStyle(color: Colors.white)),
+      );
+    }
+
+    return Expanded(
+      child: GridView.builder(
+        controller: _scrollController,  // Attach ScrollController for pagination
+        padding: EdgeInsets.symmetric(horizontal: 10),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3,
+          childAspectRatio: 0.6,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+        ),
+        itemCount: lives.length,
+        itemBuilder: (context, index) {
+          final stream = lives[index];
+          return GestureDetector(
+            onTap: () {
+              // Implement stream viewing logic here (navigate to player screen)
+              print('Stream selected: $stream');
+            },
+            child: Column(
+              children: [
+                Container(
+                  height: 130.h,
+                  width: 100.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(AppSize.s15.r),
+                    image: DecorationImage(
+                      image: AssetImage('assets/images/bein.png'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10.h),
+                Text(
+                  stream,
+                  textAlign: TextAlign.center,
+                  style: getRegularTitleStyle(
+                    color: ColorsManager.whiteColor,
+                    fontSize: AppSize.s12.sp,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
 }
+

@@ -27,6 +27,7 @@ class CustomTextFormField extends StatelessWidget {
   final Color? fillColor;
   final Color? cursorColor;
   final Size? size;
+  final  validator ;
 
   const CustomTextFormField({
     super.key,
@@ -56,6 +57,7 @@ class CustomTextFormField extends StatelessWidget {
     this.fillColor,
     this.cursorColor,
     this.size,
+    this.validator,
   });
 
   @override
@@ -67,6 +69,7 @@ class CustomTextFormField extends StatelessWidget {
         controller: controller,
         keyboardType: keyboardType,
         obscureText: obscureText,
+        validator: validator,
         minLines: minLines,
         maxLines: maxLines,
         cursorColor: cursorColor,

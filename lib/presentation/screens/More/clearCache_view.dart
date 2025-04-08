@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:wish/presentation/resources/colors-manager.dart';
 import 'package:wish/presentation/resources/constants/custom-staticwidget.dart';
-import 'package:wish/presentation/screens/More/playlists_view.dart';
+import 'package:wish/presentation/screens/More/playList_viewModel/playlists_view.dart';
 
 import '../../resources/constants/custom-button-constant.dart';
 import '../../resources/font-manager.dart';

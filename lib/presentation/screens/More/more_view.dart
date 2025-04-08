@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:wish/presentation/resources/colors-manager.dart';
 import 'package:wish/presentation/resources/constants/custom-staticwidget.dart';
 import 'package:wish/presentation/screens/Live/live_view.dart';
-import 'package:wish/presentation/screens/More/playlists_view.dart';
+import 'package:wish/presentation/screens/More/playList_viewModel/playlists_view.dart';
 import 'package:wish/presentation/screens/More/settings_view.dart';
 
 import '../../resources/styles-manager.dart';

@@ -59,7 +59,7 @@ loading (double size) {
 
 
 Widget rowDiv (double width) {
-  return Row(
+  return  Row(
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
       Container(

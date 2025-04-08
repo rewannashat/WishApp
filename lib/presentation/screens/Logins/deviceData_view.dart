@@ -1,10 +1,13 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wish/presentation/screens/Logins/logins_viewModel/login_cubit.dart';
 import 'package:wish/presentation/screens/Logins/logins_viewModel/login_states.dart';
+import 'package:wish/presentation/screens/Logins/splash_view.dart';
 
 import '../../resources/colors-manager.dart';
 import '../../resources/constants/custom-button-constant.dart';
@@ -18,6 +21,8 @@ class DeviceDataView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    LoginCubit cubit = LoginCubit.get(context);
+    final result = cubit.login();
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -39,8 +44,15 @@ class DeviceDataView extends StatelessWidget {
                   style: getMediumTextStyle(color: Colors.white, fontSize: 20.sp),
                 ),
                 SizedBox(height: 5.h),
+
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () async {
+                    final Uri url = Uri.parse("https://haythamelbadwy.github.io/Wish");
+
+                    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                      throw 'Could not launch $url';
+                    }
+                  },
                   child:  Text(
                     'https://Wish.com',
                     style: TextStyle(
@@ -82,7 +94,7 @@ class DeviceDataView extends StatelessWidget {
                             style: getMediumTextStyle(color: Colors.white, fontSize:  20.sp),
                           ),
                           Text(
-                            '123456',
+                            cubit.deviceKey ?? 'Unknown',
                             style: getMediumTextStyle(color: Color(0xffABB2C0), fontSize:  20.sp),
                           ),
                         ],
@@ -105,8 +117,32 @@ class DeviceDataView extends StatelessWidget {
                   fontWeight: FontWightManager.fontWeightRegular,
                   borderRadius: 5.r,
                   fontFamily: FontManager.fontFamAPP,
-                  onPressed: () {
-                    NavAndRemove(ctx: context,screen: AddPlaylistScreen());
+                  onPressed: () async {
+                    if(await result) {
+                      NavAndRemove(ctx: context,screen: AddPlaylistScreen());
+                    } else {
+                      AwesomeDialog(
+                        context: context,
+                        dialogType: DialogType.warning,
+                        animType: AnimType.scale,
+                        headerAnimationLoop: false,
+                        title: 'Trial Period Expired',
+                        desc: 'You need to subscribe to continue using the app.',
+                        btnOkText: 'OK',
+                        btnOkOnPress: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (_) => SplashView()),
+                          );
+                        },
+                        btnOkColor: Colors.redAccent,
+                        customHeader: Lottie.asset(
+                          'assets/animation/Animation - 1743562215054.json',
+                          height: 150,
+                          repeat: true,
+                        ),
+                      )..show();
+                    }
                   },
                 ),
                 const Spacer(),

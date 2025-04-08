@@ -54,7 +54,7 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => LiveCubit(),
+          create: (context) => LiveCubit()..getLiveCategories(),
         ),
         BlocProvider(
           create: (context) => MovieCubit(),
@@ -66,7 +66,7 @@ class MyApp extends StatelessWidget {
           create: (context) => SeriesCubit(),
         ),
         BlocProvider(
-          create: (context) => LoginCubit()..fetchDeviceData(),
+          create: (context) => LoginCubit()..login(),
         ),
       ],
       child: MaterialApp(
