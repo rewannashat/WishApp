@@ -49,6 +49,9 @@ dependencies:
   lottie: ^2.2.0
   awesome_dialog: ^3.1.0
   flutter_spinkit: ^5.1.0
+  video_player: ^2.7.0
+  better_player: ^0.0.83
+  chewie:
 
   # Loading Animations
   loading_animation_widget: ^1.2.0+4

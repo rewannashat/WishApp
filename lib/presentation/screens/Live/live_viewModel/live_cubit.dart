@@ -9,35 +9,33 @@ class LiveCubit extends Cubit<LiveStates> {
 
   static LiveCubit get(context) => BlocProvider.of(context);
 
-  // == Category Logic ==
+  // Category Logic
   List<Map<String, dynamic>> categories = [];
   String? selectedCategoryId;
   String? selectedCategoryName;
   bool isDropdownOpen = false;
 
-  // Pagination properties
+  // Pagination
   int currentPage = 1;
   final int pageSize = 50;
   bool isLoading = false;
 
-  // Stream lists
-  List<String> allLive = [];
-  List<String> filteredLive = [];
+  // Streams
+  List<Map<String, dynamic>> allLive = [];
+  List<Map<String, dynamic>> filteredLive = [];
 
   void toggleDropdown() {
     isDropdownOpen = !isDropdownOpen;
     emit(ChangeCategoryState());
   }
 
-  /// 🔄 Change selected category and fetch streams
   void changeCategory(Map<String, dynamic> category) {
     selectedCategoryId = category['category_id'];
     selectedCategoryName = category['category_name'];
-    getLiveStreams(resetPagination: true); // Reset pagination when category changes
+    getLiveStreams(resetPagination: true);
     emit(ChangeCategoryState());
   }
 
-  /// 🌐 Fetch live categories from API
   void getLiveCategories() async {
     emit(GetCategoriesLoadingState());
 
@@ -54,7 +52,6 @@ class LiveCubit extends Cubit<LiveStates> {
 
       if (response.statusCode == 200 && response.data is List) {
         categories = List<Map<String, dynamic>>.from(response.data);
-      //  log('[LiveCategories] Fetched: $categories');
 
         if (categories.isNotEmpty) {
           selectedCategoryId = categories.first['category_id'];
@@ -72,13 +69,12 @@ class LiveCubit extends Cubit<LiveStates> {
     }
   }
 
-  /// 📺 Get live streams for selected category (with pagination support)
   void getLiveStreams({bool resetPagination = false}) async {
     if (selectedCategoryId == null || isLoading) return;
 
     if (resetPagination) {
       currentPage = 1;
-      allLive.clear(); // Reset the list when category changes
+      allLive.clear();
     }
 
     isLoading = true;
@@ -99,19 +95,17 @@ class LiveCubit extends Cubit<LiveStates> {
       );
 
       if (response.statusCode == 200 && response.data is List) {
-        final List<dynamic> responseData = response.data;
+        final List<Map<String, dynamic>> newStreams = List<Map<String, dynamic>>.from(
+          response.data.map((item) => {
+            'name': item['name'] ?? 'No Name',
+            'stream_id': item['stream_id'] ?? 0,
+          }),
+        );
 
-        // Get the stream names from the response
-        final List<String> newStreams = responseData
-            .map<String>((item) => item['name'].toString())
-            .toList();
+        allLive.addAll(newStreams);
+        filteredLive = List.from(allLive);
+        currentPage++;
 
-        allLive.addAll(newStreams); // Add new streams to the list
-
-        // Apply search filter if any
-        filteredLive = allLive; // You can add custom filtering logic if needed
-
-        currentPage++; // Increment page number for the next load
         emit(GetStreamsSuccessState());
       } else {
         emit(GetStreamsErrorState('Invalid streams response format.'));
@@ -124,19 +118,20 @@ class LiveCubit extends Cubit<LiveStates> {
     }
   }
 
-  /// 🔍 Search streams by name
   void searchLive(String query) {
     if (query.isEmpty) {
-      filteredLive = [];
+      filteredLive = List.from(allLive);
     } else {
       filteredLive = allLive
-          .where((name) => name.toLowerCase().contains(query.toLowerCase()))
+          .where((stream) => stream['name']
+          .toString()
+          .toLowerCase()
+          .contains(query.toLowerCase()))
           .toList();
     }
     emit(ChangeCategoryState());
   }
 
-  /// 🔃 Reorder live items (optional feature)
   void reorderItems(int oldIndex, int newIndex) {
     if (oldIndex < 0 || newIndex < 0 || oldIndex >= filteredLive.length || newIndex >= filteredLive.length) return;
 

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../domian/Lang/helper_lang.dart';
 import '../../resources/colors-manager.dart';
 import '../../resources/constants/custom-staticwidget.dart';
@@ -13,6 +14,7 @@ import '../../resources/font-manager.dart';
 import '../../resources/styles-manager.dart';
 import '../../resources/values-manager.dart';
 import '../BottomNav/bottomnavbar_view.dart';
+import 'livePlayer_view.dart';
 import 'live_viewModel/live_cubit.dart';
 import 'live_viewModel/live_states.dart';
 
@@ -25,11 +27,11 @@ class LiveView extends StatefulWidget {
 
 
 class _LiveViewState extends State<LiveView> {
-  OverlayEntry? _overlayEntry;
   final LayerLink _layerLink = LayerLink();
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController(); // ScrollController for pagination
+
 
   @override
   void initState() {
@@ -249,19 +251,20 @@ class _LiveViewState extends State<LiveView> {
         ? cubit.filteredLive
         : cubit.allLive;
 
-    if (lives.isEmpty) {
+    if (lives!.isEmpty) {
       return Center(
         child: state is GetStreamsLoadingState
             ? SpinKitFadingCircle(
           color: Colors.white,
           size: 50.0,
-        ) : Text('No streams available.', style: TextStyle(color: Colors.white)),
+        )
+            : Text('No streams available.', style: TextStyle(color: Colors.white)),
       );
     }
 
     return Expanded(
       child: GridView.builder(
-        controller: _scrollController,  // Attach ScrollController for pagination
+        controller: _scrollController, // Attach ScrollController for pagination
         padding: EdgeInsets.symmetric(horizontal: 10),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
@@ -272,10 +275,14 @@ class _LiveViewState extends State<LiveView> {
         itemCount: lives.length,
         itemBuilder: (context, index) {
           final stream = lives[index];
+          final streamId = stream['stream_id'];
+         // print('Stream Data: ${stream}');
           return GestureDetector(
             onTap: () {
-              // Implement stream viewing logic here (navigate to player screen)
-              print('Stream selected: $stream');
+              final streamUrl =
+                  'http://tgdns4k.com:8080/player_api.php?username=6665e332412&password=12977281747688/$streamId.ts';
+             // print('Stream selected: $stream');
+              NormalNav(ctx: context , screen: LivePlayerScreen(streamUrl: streamUrl,));
             },
             child: Column(
               children: [
@@ -293,7 +300,7 @@ class _LiveViewState extends State<LiveView> {
                 ),
                 SizedBox(height: 10.h),
                 Text(
-                  stream,
+                  stream['name'],  // Display stream name
                   textAlign: TextAlign.center,
                   style: getRegularTitleStyle(
                     color: ColorsManager.whiteColor,
@@ -309,5 +316,5 @@ class _LiveViewState extends State<LiveView> {
       ),
     );
   }
-}
 
+}
