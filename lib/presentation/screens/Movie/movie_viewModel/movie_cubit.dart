@@ -196,16 +196,22 @@ class MovieCubit extends Cubit<MovieState> {
       if (response.statusCode == 200) {
         final data = response.data as List<dynamic>;
 
-        categories = data
-            .map<Map<String, String>>((cat) => {
-          'id': cat['category_id'].toString(),
-          'name': cat['category_name'].toString(),
-        })
-            .toList();
-        // Add Favorite category manually
-        categories.add({'id': 'fav', 'name': 'Favorite'});
+        // Create categories list and add "Favorite" at the beginning
+        categories = [
+          {'id': 'fav', 'name': 'Favorite'},
+        ];
 
-        // Select the first category by default
+        // Add API categories to the list (ignoring 'fav' if it's already present)
+        categories.addAll(
+          data
+              .map<Map<String, String>>((cat) => {
+            'id': cat['category_id'].toString(),
+            'name': cat['category_name'].toString(),
+          })
+              .toList(),
+        );
+
+        // Set the first category (either the favorite or a valid one)
         selectedCategoryId = categories.first['id'];
         selectedCategoryName = categories.first['name']!;
 
@@ -221,6 +227,9 @@ class MovieCubit extends Cubit<MovieState> {
       emit(CategoryErrorState());
     }
   }
+
+
+
 
   // Fetch Movies for Selected Category
   Future<void> fetchMoviesForCategory(String categoryId) async {

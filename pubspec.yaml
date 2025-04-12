@@ -52,6 +52,7 @@ dependencies:
   video_player: ^2.7.0
   better_player: ^0.0.83
   chewie:
+  flutter_svg: ^1.0.0
 
   # Loading Animations
   loading_animation_widget: ^1.2.0+4
