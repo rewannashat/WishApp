@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
           create: (context) => LiveCubit()..getLiveCategories(),
         ),
         BlocProvider(
-          create: (context) => MovieCubit(),
+          create: (context) => MovieCubit()..getMovieCategories(),
         ),
         BlocProvider(
           create: (context) => BottomNavBarCubit(),

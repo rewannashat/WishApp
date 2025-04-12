@@ -5,7 +5,7 @@ class ChangeCategoryState extends LiveStates {}
 
 
 //== Fav Icon STATES ==//
-class AddFavState extends LiveStates {}
+class FavoritesUpdatedState extends LiveStates {}
 class DeleteFavState extends LiveStates {}
 
 

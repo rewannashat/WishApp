@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'fav_model.dart';
 import 'live_states.dart';
 
 class LiveCubit extends Cubit<LiveStates> {
@@ -29,13 +30,13 @@ class LiveCubit extends Cubit<LiveStates> {
     emit(ChangeCategoryState());
   }
 
-  void changeCategory(Map<String, dynamic> category) {
+  /*void changeCategory(Map<String, dynamic> category) {
     selectedCategoryId = category['category_id'];
     selectedCategoryName = category['category_name'];
     getLiveStreams(resetPagination: true);
     emit(ChangeCategoryState());
   }
-
+*/
   void getLiveCategories() async {
     emit(GetCategoriesLoadingState());
 
@@ -139,4 +140,51 @@ class LiveCubit extends Cubit<LiveStates> {
     filteredLive.insert(newIndex, item);
     emit(LiveUpdatedState(List.from(filteredLive)));
   }
+
+
+  /// Fav LOGIC ///
+  bool showOnlyFavorites = false;
+  int? selectedDropdownId;
+  // Store favorite streams in a list of FavoriteStream objects
+  List<FavoriteStream> favorites = [];
+
+  // Toggle favorite status for a stream
+  void toggleFavorite(FavoriteStream stream) {
+    final index = favorites.indexWhere((fav) => fav.streamId == stream.streamId);
+
+    if (index != -1) {
+      favorites.removeAt(index);  // Remove if already favorited
+    } else {
+      favorites.add(stream);  // Add if not in favorites
+    }
+
+    emit(FavoritesUpdatedState());
+  }
+
+  // Check if a stream is a favorite
+  bool isFavorite(int streamId) {
+    return favorites.any((fav) => fav.streamId == streamId);
+  }
+
+  // Get list of favorite streams filtered from allLive
+  List<Map<String, dynamic>> get favoriteStreams {
+    return allLive?.where((stream) => isFavorite(stream['stream_id'])).toList() ?? [];
+  }
+
+  // Show only favorite streams in the UI
+  void showFavoritesOnly() {
+    showOnlyFavorites = true;
+    selectedCategoryId = '-1';  // Set the selected category to 'Favorites'
+    emit(ChangeCategoryState());
+  }
+
+  // Change the category selection in the dropdown
+  void changeCategory(Map<String, dynamic> category) {
+    // Update selectedCategoryId as String
+    selectedCategoryId = category['category_id'].toString();
+
+    showOnlyFavorites = false;  // Reset to show all streams, not just favorites
+    emit(ChangeCategoryState());
+  }
+
 }

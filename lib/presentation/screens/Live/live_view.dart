@@ -217,24 +217,34 @@ class _LiveViewState extends State<LiveView> {
                   icon: Icon(Icons.arrow_drop_down, color: Colors.white, size: 24.sp),
                 ),
                 barrierColor: Colors.black.withOpacity(0.5),
-                items: cubit.categories.map((category) {
-                  return DropdownMenuItem<Map<String, dynamic>>(
-                    value: category,
-                    child: Text(
-                      category['category_name'],
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  );
-                }).toList(),
-                value: cubit.categories.isNotEmpty
-                    ? cubit.categories.firstWhere(
+                items: [
+                  DropdownMenuItem<Map<String, dynamic>>(
+                    value: {"category_id": -1, "category_name": "Favorites"},
+                    child: Text("Favorites", style: TextStyle(color: Colors.white)),
+                  ),
+                  ...cubit.categories.map((category) {
+                    return DropdownMenuItem<Map<String, dynamic>>(
+                      value: category,
+                      child: Text(
+                        category['category_name'],
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    );
+                  }).toList(),
+                ],
+                value: cubit.showOnlyFavorites
+                    ? {"category_id": -1, "category_name": "Favorites"}
+                    : cubit.categories.firstWhere(
                       (c) => c['category_id'] == cubit.selectedCategoryId,
                   orElse: () => cubit.categories.first,
-                )
-                    : null,
+                ),
                 onChanged: (Map<String, dynamic>? value) {
                   if (value != null) {
-                    cubit.changeCategory(value);
+                    if (value['category_id'] == -1) {
+                      cubit.showFavoritesOnly();
+                    } else {
+                      cubit.changeCategory(value);
+                    }
                   }
                   cubit.toggleDropdown();
                 },
@@ -247,9 +257,11 @@ class _LiveViewState extends State<LiveView> {
   }
 
   Widget _buildStreamGrid(LiveCubit cubit, LiveStates state) {
-    final lives = cubit.filteredLive.isNotEmpty || _searchController.text.isNotEmpty
+    final lives = cubit.showOnlyFavorites
+        ? cubit.favoriteStreams
+        : (cubit.filteredLive.isNotEmpty || _searchController.text.isNotEmpty
         ? cubit.filteredLive
-        : cubit.allLive;
+        : cubit.allLive);
 
     if (lives!.isEmpty) {
       return Center(
@@ -273,46 +285,70 @@ class _LiveViewState extends State<LiveView> {
           mainAxisSpacing: 10,
         ),
         itemCount: lives.length,
-        itemBuilder: (context, index) {
-          final stream = lives[index];
-          final streamId = stream['stream_id'];
-         // print('Stream Data: ${stream}');
-          return GestureDetector(
-            onTap: () {
-              final streamUrl =
-                  'http://tgdns4k.com:8080/player_api.php?username=6665e332412&password=12977281747688/$streamId.ts';
-             // print('Stream selected: $stream');
-              NormalNav(ctx: context , screen: LivePlayerScreen(streamUrl: streamUrl,));
-            },
-            child: Column(
-              children: [
-                Container(
-                  height: 130.h,
-                  width: 100.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(AppSize.s15.r),
-                    image: DecorationImage(
-                      image: AssetImage('assets/images/bein.png'),
-                      fit: BoxFit.cover,
+          itemBuilder: (context, index) {
+            final stream = lives[index];
+            final streamId = stream['stream_id'];
+            final isFav = cubit.isFavorite(streamId); // Check if this stream is a favorite
+
+            return GestureDetector(
+              onTap: () {
+                final streamUrl =
+                    'http://tgdns4k.com:8080/live/6665e332412/12977281747688/$streamId.m3u8';
+                NormalNav(
+                  ctx: context,
+                  screen: LivePlayerScreen(
+                    streamId: streamId,
+                    name: stream['name'] ?? '',
+                    streamUrl: streamUrl,
+                  ),
+                );
+              },
+              child: Column(
+                children: [
+                  Stack(
+                    children: [
+                      Container(
+                        height: 130.h,
+                        width: 100.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(AppSize.s15.r),
+                          image: DecorationImage(
+                            image: AssetImage('assets/images/bein.png'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      if (isFav)
+                        Positioned(
+                          bottom: 5,
+                          right: 5,
+                          child: Icon(
+                            Icons.favorite,
+                            color: Colors.red,
+                            size: 25.sp,
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 10.h),
+                  Flexible(
+                    child: Text(
+                      stream['name'] ?? '',
+                      textAlign: TextAlign.center,
+                      style: getRegularTitleStyle(
+                        color: ColorsManager.whiteColor,
+                        fontSize: 12.sp,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: true,
                     ),
                   ),
-                ),
-                SizedBox(height: 10.h),
-                Text(
-                  stream['name'],  // Display stream name
-                  textAlign: TextAlign.center,
-                  style: getRegularTitleStyle(
-                    color: ColorsManager.whiteColor,
-                    fontSize: AppSize.s12.sp,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          );
-        },
+                ],
+              ),
+            );
+          }
       ),
     );
   }

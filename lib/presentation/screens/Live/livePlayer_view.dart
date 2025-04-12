@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:better_player/better_player.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'live_viewModel/fav_model.dart';
+import 'live_viewModel/live_cubit.dart';
+import 'live_viewModel/live_states.dart';
 
 class LivePlayerScreen extends StatefulWidget {
+  final int streamId;
+  final String name;
   final String streamUrl;
 
-  LivePlayerScreen({required this.streamUrl});
+  LivePlayerScreen({
+    required this.streamId,
+    required this.name,
+    required this.streamUrl,
+  });
 
   @override
   _LivePlayerScreenState createState() => _LivePlayerScreenState();
@@ -16,10 +27,15 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
   @override
   void initState() {
     super.initState();
+
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
       widget.streamUrl,
-      liveStream: true, // Important for live streaming
+      videoFormat: BetterPlayerVideoFormat.hls,
+      liveStream: true,
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+      },
     );
 
     _betterPlayerController = BetterPlayerController(
@@ -27,7 +43,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
         autoPlay: true,
         looping: false,
         controlsConfiguration: BetterPlayerControlsConfiguration(
-          enableSkips: false, // No need for skip in live video
+          enableSkips: false,
         ),
       ),
       betterPlayerDataSource: dataSource,
@@ -37,7 +53,32 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Live Stream")),
+      appBar: AppBar(
+        title: Text("Live Stream"),
+        actions: [
+          BlocBuilder<LiveCubit, LiveStates>(
+            builder: (context, state) {
+              final cubit = LiveCubit.get(context);
+              final isFav = cubit.isFavorite(widget.streamId);
+
+              return IconButton(
+                icon: Icon(
+                  isFav ? Icons.favorite : Icons.favorite_border,
+                  color: isFav ? Colors.red : Colors.white,
+                ),
+                onPressed: () {
+                  final favItem = FavoriteStream(
+                    streamId: widget.streamId,
+                    name: widget.name,
+                    url: widget.streamUrl,
+                  );
+                  cubit.toggleFavorite(favItem);
+                },
+              );
+            },
+          ),
+        ],
+      ),
       body: Center(
         child: BetterPlayer(controller: _betterPlayerController),
       ),
