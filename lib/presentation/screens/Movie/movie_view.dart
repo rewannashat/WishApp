@@ -41,6 +41,8 @@ class _MovieViewState extends State<MovieView>  with SingleTickerProviderStateMi
   void initState() {
     super.initState();
 
+    MovieCubit().loadFavorites();
+
     // Initialize the AnimationController
     _controller = AnimationController(
       duration: Duration(seconds: 1),
@@ -207,15 +209,15 @@ class _MovieViewState extends State<MovieView>  with SingleTickerProviderStateMi
                               onChanged: (String? value) {
                                 if (value != null) {
                                   if (value == 'fav') {
-                                    // Handle "Favorite" category separately if needed
                                     cubit.changeCategory(value, 'Favorite');
+                                    cubit.loadFavorites(); // Ensure favorites are loaded when selected
                                   } else {
-                                    final category = cubit.categories.firstWhere(
-                                            (cat) => cat['id'] == value);
+                                    final category = cubit.categories.firstWhere((cat) => cat['id'] == value);
                                     cubit.changeCategory(value, category['name']!);
                                   }
                                 }
                               },
+
                               iconStyleData: IconStyleData(
                                 icon: Icon(Icons.arrow_drop_down, color: Colors.white, size: 24.sp),
                               ),
@@ -229,8 +231,6 @@ class _MovieViewState extends State<MovieView>  with SingleTickerProviderStateMi
                           ),
                         ),
                       )
-
-
 
                     ],
                   )

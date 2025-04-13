@@ -5,7 +5,9 @@ import 'package:bloc/bloc.dart';
 import 'package:chewie/chewie.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
+import '../../../../domian/local/sharedPref.dart';
 import 'cast_model.dart';
 import 'movie_model.dart';
 import 'movie_states.dart';
@@ -155,8 +157,22 @@ class MovieCubit extends Cubit<MovieState> {
 
   List<Map<String, String>> allMovies = [];
   List<Map<String, String>> filteredMovies = [];
-
   final Set<int> _favorites = {};
+
+  // Load favorites from SharedPreferences
+  void loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final favoriteIds = prefs.getStringList('favoriteMovies') ?? [];
+    _favorites.addAll(favoriteIds.map((e) => int.parse(e)));
+    emit(FavoriteLoadedState(Set<int>.from(_favorites)));
+  }
+
+  // Save favorites to SharedPreferences
+  void saveFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final favoriteIds = _favorites.map((e) => e.toString()).toList();
+    prefs.setStringList('favoriteMovies', favoriteIds);
+  }
 
   void toggleFavorite(int movieIndex) {
     final movieId = int.tryParse(allMovies[movieIndex]['id'] ?? '');
@@ -167,6 +183,7 @@ class MovieCubit extends Cubit<MovieState> {
     } else {
       _favorites.add(movieId);
     }
+    saveFavorites();  // Save updated favorites to SharedPreferences
     emit(FavoriteUpdated(Set<int>.from(_favorites)));
   }
 

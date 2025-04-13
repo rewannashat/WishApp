@@ -63,7 +63,7 @@ class MyApp extends StatelessWidget {
           create: (context) => BottomNavBarCubit(),
         ),
         BlocProvider(
-          create: (context) => SeriesCubit(),
+          create: (context) => SeriesCubit()..getSeriesCategories(),
         ),
         BlocProvider(
           create: (context) => LoginCubit()..login(),

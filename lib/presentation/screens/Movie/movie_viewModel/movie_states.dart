@@ -40,6 +40,11 @@ class FavoriteUpdated extends MovieState {
   FavoriteUpdated(this.favorites);
 }
 
+class FavoriteLoadedState extends MovieState {
+  final Set<int> favoriteMovieIds;
+  FavoriteLoadedState(this.favoriteMovieIds);
+}
+
 class SearchMoviesState extends MovieState {
   final List<Map<String, String>> filteredMovies;
   SearchMoviesState(this.filteredMovies);

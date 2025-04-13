@@ -6,6 +6,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:wish/domian/Lang/helper_lang.dart';
 import 'package:wish/presentation/resources/constants/custom-staticwidget.dart';
 import 'package:wish/presentation/resources/font-manager.dart';
@@ -131,16 +133,53 @@ class _SeriesViewState extends State<SeriesView> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   SizedBox(width: 45.w),
-                  // Align with search bar start point
                   Expanded(
-                    child: Container(
+                    child: cubit.categories.isEmpty ? Container(
                       height: 40.h,
                       width: 280.w,
-                      margin: EdgeInsetsDirectional.symmetric(horizontal: 15),
-                      padding: EdgeInsetsDirectional.symmetric(horizontal: 10),
+                      margin: EdgeInsets.symmetric(horizontal: 15),
+                      padding: EdgeInsets.symmetric(horizontal: 10),
                       decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(5.r)),
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(5.r),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton2<Map<String, dynamic>>(
+                          isExpanded: true,
+                          dropdownStyleData: DropdownStyleData(
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          iconStyleData: IconStyleData(
+                            icon: Icon(Icons.arrow_drop_down, color: Colors.white, size: 24.sp),
+                          ),
+                          barrierColor: Colors.black.withOpacity(0.5),
+                          items: [
+                            DropdownMenuItem<Map<String, dynamic>>(
+                              value: null,
+                              child: Text(
+                                'No Data Available',
+                                style: TextStyle(color: Colors.white),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
+                          value: null,
+                          onChanged: null,
+                        ),
+                      ),
+                    ) :
+                    Container(
+                      height: 40.h,
+                      width: 280.w,
+                      margin: EdgeInsets.symmetric(horizontal: 15),
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(5.r),
+                      ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton2<String>(
                           isExpanded: true,
@@ -155,13 +194,15 @@ class _SeriesViewState extends State<SeriesView> {
                           ),
                           barrierColor: Colors.black.withOpacity(0.5),
                           items: cubit.categories
-                              .map((String item) => DropdownMenuItem<String>(
-                            value: item,
-                            child: Text(
-                              item,
-                              style: TextStyle(fontSize: 14.sp, color: Colors.white),
+                              .map(
+                                (String item) => DropdownMenuItem<String>(
+                              value: item,
+                              child: Text(
+                                item,
+                                style: TextStyle(fontSize: 14.sp, color: Colors.white),
+                              ),
                             ),
-                          ))
+                          )
                               .toList(),
                           value: cubit.selectedCategory,
                           onChanged: (String? value) {
@@ -170,12 +211,10 @@ class _SeriesViewState extends State<SeriesView> {
                             }
                             cubit.toggleDropdown();
                           },
-
                         ),
                       ),
                     ),
                   ),
-
                 ],
               ),
             ],
@@ -185,12 +224,86 @@ class _SeriesViewState extends State<SeriesView> {
           Expanded(
             child: BlocBuilder<SeriesCubit, SeriesState>(
               builder: (context, state) {
-                final series = cubit.selectedCategory == 'Favorite'
-                    ? cubit.favoriteSeries
-                    : (cubit.filteredSeries.isNotEmpty ||
-                            _searchController.text.isNotEmpty
-                        ? cubit.filteredSeries
-                        : cubit.allSeries);
+                // Handle loading state
+                if (state is SeriesLoadingState) {
+                  return Center(
+                    child: SpinKitFadingCircle(
+                      color: Colors.white,
+                      size: 50.0,
+                    ),
+                  );
+                }
+
+                // Handle no data state
+                if (state is SeriesErrorState || cubit.filteredSeries.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Column(
+                        children: [
+                          SpinKitFadingCircle(
+                            color: Colors.white,
+                            size: 50.0,
+                          ),
+                          Text(
+                            'No Series Found!',
+                            style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+
+
+              /*  // Handle empty recent state
+                if (cubit.recentSeriesList.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.history_edu,
+                            color: Colors.white,
+                            size: 50.0,
+                          ),
+                          Text(
+                            'No Recent Views!',
+                            style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                // Handle empty favorites state
+                if (cubit.favoriteSeriesList.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.favorite_border,
+                            color: Colors.white,
+                            size: 50.0,
+                          ),
+                          Text(
+                            'No Favorites Yet!',
+                            style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }*/
+
+
+
+                // Display the GridView with series
                 return GridView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 10),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -199,65 +312,117 @@ class _SeriesViewState extends State<SeriesView> {
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
                   ),
-                  itemCount: series.length,
+                  itemCount: cubit.filteredSeries.length, // Use filteredSeries here
                   itemBuilder: (context, index) {
-                    final seriess = series[index];
-                    final isFavorite = cubit.isFavorite(index);
+                    final seriesItem = cubit.filteredSeries[index];
+                    final isFavorite = cubit.favoriteSeriesList.any(
+                          (item) => item['title'] == seriesItem.title,
+                    );
+                    final isRecent = cubit.recentSeriesList.any(
+                          (item) => item['title'] == seriesItem.title,
+                    );
+
                     return Column(
                       children: [
                         GestureDetector(
                           onTap: () async {
+                            final seriesId = seriesItem.seriesId; // Ensure series_id is available
+
+                            if (seriesId == null) {
+                              print("Series ID is missing.");
+                              return;
+                            }
+
+                            // Call getSeriesDetails method from SeriesCubit
+                            context.read<SeriesCubit>().getSeriesDetails(seriesId);
+                            context.read<SeriesCubit>().debugEpisodes(seriesItem);
+
                             final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    SeriesDetailsView(index: index),
+                                builder: (context) => SeriesDetailsView(series: seriesItem), // Pass the Series model here
                               ),
                             );
-                            if (result != null) {
-                              setState(() {});
-                              log('Updated: isFav = ${result['isFav']}, id = ${result['id']}');
-                            }
+
+                            /* if (result != null) {
+                              cubit.loadFavoritesFromPrefs(); // Refresh lists after interaction
+                            }*/
                           },
-                          child: Stack(children: [
-                            Container(
-                              height: 130.h,
-                              width: 100.w,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius:
-                                    BorderRadius.circular(AppSize.s15.r),
-                                image: DecorationImage(
-                                  image: AssetImage(seriess['image'] ??
-                                      'assets/images/movie.png'),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            if (isFavorite)
-                              Positioned(
-                                bottom: 10,
-                                right: 5,
-                                child: Icon(
-                                  Icons.favorite,
+                          child: Stack(
+                            children: [
+                              Container(
+                                height: 130.h,
+                                width: 100.w,
+                                decoration: BoxDecoration(
                                   color: Colors.white,
-                                  size: 28,
+                                  borderRadius: BorderRadius.circular(AppSize.s15.r),
                                 ),
+                                child: seriesItem.imageUrl != null && seriesItem.imageUrl!.startsWith('http')
+                                    ? Image.network(
+                                  seriesItem.imageUrl!,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) {
+                                      return child; // Show the image when it's loaded
+                                    }
+                                    return Center(child: CircularProgressIndicator());
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Image.asset('assets/images/error.png'); // Fallback image URL
+                                  },
+                                )
+                                    : Image.asset('assets/images/movie.png', fit: BoxFit.cover), // Default local image
                               ),
-                          ]),
+                              if (isFavorite)
+                                Positioned(
+                                  bottom: 10,
+                                  right: 5,
+                                  child: Icon(
+                                    Icons.favorite,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
+                                ),
+                              if (isRecent)
+                                Positioned(
+                                  bottom: 10,
+                                  left: 5,
+                                  child: Icon(
+                                    Icons.history,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
                         SizedBox(height: 10.h),
-                        Text(seriess['title'] ?? 'Unknown',
+                        Flexible(
+                          child: Text(
+                            seriesItem.title ?? 'Unknown',
                             style: getRegularTitleStyle(
-                                color: ColorsManager.whiteColor,
-                                fontSize: AppSize.s12.sp)),
+                              color: ColorsManager.whiteColor,
+                              fontSize: AppSize.s12.sp,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ],
                     );
                   },
                 );
               },
             ),
-          ),
+          )
+
+
+
+
+
+
+
         ],
       ),
     );
