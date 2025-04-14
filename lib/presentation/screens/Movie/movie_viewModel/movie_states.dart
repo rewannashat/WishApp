@@ -20,7 +20,7 @@ class MovieError extends MovieState {}
 class MovieLoadingState extends MovieState {}
 class MovieSucessState extends MovieState {
   final MovieDetailModel movieDetail;
-  final List<CastMember> castMembers;
+  final List<CastMemberModel> castMembers;
 
   MovieSucessState(this.movieDetail, this.castMembers);
 }

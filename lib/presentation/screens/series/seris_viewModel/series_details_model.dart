@@ -10,6 +10,7 @@ class Series {
   final String rating;
   final List<String> seasons;  // Add seasons field
 
+
   Series({
     required this.title,
     required this.imageUrl,
@@ -28,17 +29,11 @@ class Series {
     if (json['cast'] != null) {
       if (json['cast'] is List) {
         castList = (json['cast'] as List)
-            .map((e) => CastMember.fromJson({
-          'name': e.toString(),
-          'role': '',
-        }))
+            .map((e) => CastMember.fromJson({'name': e.toString(), 'role': ''}))
             .toList();
       } else {
         castList = [
-          CastMember.fromJson({
-            'name': json['cast'].toString(),
-            'role': '',
-          })
+          CastMember.fromJson({'name': json['cast'].toString(), 'role': ''})
         ];
       }
     }
@@ -79,9 +74,11 @@ class Series {
       categories: categoriesList,
       genre: genreList,
       rating: json['rating']?.toString() ?? '',
-      seasons: seasonsList,  // Add seasons list
+      seasons: seasonsList,
+
     );
   }
+
 
   Map<String, dynamic> toJson() {
     return {
@@ -119,6 +116,7 @@ class Series {
       genre: [],
       rating: '',
       seasons: [],
+
     );
   }
 
@@ -128,13 +126,15 @@ class Series {
 class CastMember {
   final String name;
   final String role;
+  final String profileImage; // Add this
 
-  CastMember({required this.name, required this.role});
+  CastMember({required this.name, required this.role, this.profileImage = ''});
 
   factory CastMember.fromJson(Map<String, dynamic> json) {
     return CastMember(
       name: json['name'] ?? '',
       role: json['role'] ?? '',
+      profileImage: json['profileImage'] ?? '',
     );
   }
 
@@ -142,6 +142,7 @@ class CastMember {
     return {
       'name': name,
       'role': role,
+      'profileImage': profileImage,
     };
   }
 }
@@ -174,15 +175,16 @@ class Episode {
       episodeNum: json['episode_num'] is int
           ? json['episode_num']
           : int.tryParse(json['episode_num'].toString()) ?? 0,
-      title: json['title'] ?? '',
+      title: json['title'] ?? 'Untitled',  // Default value for title
       containerExtension: json['container_extension'] ?? '',
-      duration: info['duration'] ?? '',
+      duration: info['duration'] ?? 'Unknown',  // Default value for duration
       durationSecs: info['duration_secs'] is int
           ? info['duration_secs']
           : int.tryParse(info['duration_secs'].toString()) ?? 0,
       video: video,
     );
   }
+
 
 
   Map<String, dynamic> toJson() {

@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:wish/presentation/screens/series/seriesPlayer_view.dart';
 import 'package:wish/presentation/screens/series/seris_viewModel/series_cubit.dart';
 import 'package:wish/presentation/screens/series/seris_viewModel/series_details_model.dart';
 import 'package:wish/presentation/screens/series/seris_viewModel/series_states.dart';
@@ -17,16 +18,40 @@ import '../BottomNav/bottomnav_cubit.dart';
 import '../BottomNav/bottomnav_state.dart';
 import '../BottomNav/bottomnavbar_view.dart';
 
-class SeriesDetailsView extends StatelessWidget {
+class SeriesDetailsView extends StatefulWidget {
   final Series series;
 
   SeriesDetailsView({required this.series});
 
   @override
+  State<SeriesDetailsView> createState() => _SeriesDetailsViewState();
+}
+
+class _SeriesDetailsViewState extends State<SeriesDetailsView> {
+
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      final castNames = widget.series.cast
+          .expand((e) => e.name.split(','))
+          .map((name) => name.trim())
+          .take(4)
+          .toList();
+
+      context.read<SeriesCubit>().loadCastData(castNames);
+    });
+  }
+  @override
   Widget build(BuildContext context) {
     final cubit = SeriesCubit.get(context);
-    bool isFavorite = cubit.isSeriesFavorite(series.toMap());
-    int episodeCount = series.episodes.isNotEmpty ? series.episodes.length : 1;  // Handle the case if episodes list is empty
+    bool isFavorite = cubit.isSeriesFavorite(widget.series.toMap());
+    int episodeCount = widget.series.episodes.isNotEmpty ? widget.series.episodes.length : 1;  // Handle the case if episodes list is empty
+
+
+
 
     return SafeArea(
       child: Scaffold(
@@ -45,7 +70,7 @@ class SeriesDetailsView extends StatelessWidget {
                           children: [
                             // Use the dynamic image from series data
                             Image.network(
-                              series.imageUrl,
+                              widget.series.imageUrl,
                               width: double.infinity,
                               fit: BoxFit.cover,
                             ),
@@ -82,8 +107,8 @@ class SeriesDetailsView extends StatelessWidget {
                                         value: cubit.selectedSeason,
                                         icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
                                         style: const TextStyle(color: Colors.white),
-                                        items: series.seasons.isNotEmpty
-                                            ? series.seasons.map((String season) {
+                                        items: widget.series.seasons.isNotEmpty
+                                            ? widget.series.seasons.map((String season) {
                                           return DropdownMenuItem<String>(
                                             value: season,
                                             child: Text(
@@ -123,10 +148,10 @@ class SeriesDetailsView extends StatelessWidget {
                                     ),
                                     onPressed: () async {
                                       // Toggle favorite state using Cubit
-                                      await cubit.toggleFavorite(series.toMap());
+                                      await cubit.toggleFavorite(widget.series.toMap());
 
                                       // Navigate back with updated favorite state
-                                      Navigator.pop(context, {'isFav': !isFavorite, 'id': series.seriesId});
+                                      Navigator.pop(context, {'isFav': !isFavorite, 'id': widget.series.seriesId});
                                     },
                                   ),
 
@@ -155,7 +180,7 @@ class SeriesDetailsView extends StatelessWidget {
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
-                                        series.title,  // Dynamically set the title
+                                        widget.series.title,  // Dynamically set the title
                                         style: getSemiBoldTextStyle(
                                           color: ColorsManager.whiteColor,
                                           fontSize: FontSize.s15.sp,
@@ -163,7 +188,7 @@ class SeriesDetailsView extends StatelessWidget {
                                       ),
                                       SizedBox(height: 5.h),
                                       Text(
-                                        series.description,  // Dynamically set the description
+                                        widget.series.description,  // Dynamically set the description
                                         textDirection: TextDirection.rtl,
                                         style: getRegularTextStyle(
                                           color: ColorsManager.whiteColor,
@@ -174,18 +199,18 @@ class SeriesDetailsView extends StatelessWidget {
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.end,
                                         children: [
-                                          ...List.generate(series.genre.length, (index) {
+                                          ...List.generate(widget.series.genre.length, (index) {
                                             return [
                                               Text(
-                                                series.genre[index], // Display genre dynamically
+                                                widget.series.genre[index], // Display genre dynamically
                                                 style: getRegularTextStyle(
                                                   color: ColorsManager.whiteColor,
                                                   fontSize: FontSize.s12.sp,
                                                 ),
                                               ),
-                                              if (index < series.genre.length - 1) // Add "|" only between genres
+                                              if (index < widget.series.genre.length - 1) // Add "|" only between genres
                                                 SizedBox(width: 6.w),
-                                              if (index < series.genre.length - 1)
+                                              if (index < widget.series.genre.length - 1)
                                                 Text("|", style: TextStyle(color: Colors.white70, fontSize: 14)),
                                               SizedBox(width: 6.w),
                                             ];
@@ -193,7 +218,7 @@ class SeriesDetailsView extends StatelessWidget {
                                         ],
                                       ),
                                       SizedBox(height: 15.h),
-                                      buildRatingStars(series.rating),
+                                      buildRatingStars(widget.series.rating),
                                     ],
                                   ),
                                 ),
@@ -212,175 +237,110 @@ class SeriesDetailsView extends StatelessWidget {
                                   fontSize: 20.sp),
                             ),
                             SizedBox(height: 12.h),
-                          /*  SingleChildScrollView(
+                            SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: List.generate(cubit.castList.length, (index) {
                                   final cast = cubit.castList[index];
-                                  return Row(
-                                    children: [
-                                      _buildCastItem(cast.name, cast.profileImage),
-                                      SizedBox(width: 10.w),
-                                    ],
+                                  return Padding(
+                                    padding: EdgeInsets.only(right: 10.w),
+                                    child: _buildCastItem(cast.name, cast.profileImage),
                                   );
                                 }),
                               ),
-                            )*/
-
-
-
+                            )
                           ],
                         ),
-                        Stack(
-                          children: [
-                            ClipRect(
-                              child: Image.network(
-                                series.imageUrl,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-
-                            Positioned.fill(
-                              child: Container(
-                                color: Colors.black.withOpacity(0.8),
-                              ),
-                            ),
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              padding: const EdgeInsets.all(16),
-                              itemCount: (series.episodes != null && series.episodes.isNotEmpty)
-                                  ? series.episodes.length
-                                  : 1,
-                              itemBuilder: (context, index) {
-                                if (series.episodes == null || series.episodes.isEmpty) {
-                                  return Container(
-                                    margin: const EdgeInsets.only(bottom: 12),
-                                    height: 80.h,
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.5),
-                                      borderRadius: BorderRadius.circular(5.r),
+                        BlocBuilder<SeriesCubit, SeriesState>(
+                          builder: (context, state) {
+                            if (state is SeriesLoadingState) {
+                              return Center(child: CircularProgressIndicator());
+                            } else if (state is SeriesErrorState) {
+                              return Center(child: Text(state.error));
+                            } else if (state is SeriesDetailsLoadedState) {
+                              final series = state.series;  // Get the series details here
+                              return Stack(
+                                children: [
+                                  ClipRect(
+                                    child: Image.network(
+                                      series.imageUrl,  // Load the image from the series data
+                                      width: double.infinity,
+                                      fit: BoxFit.cover,
                                     ),
-                                    child: Center(
-                                      child: Text(
-                                        "No episodes available",
-                                        style: getRegularTitleStyle(
-                                          color: ColorsManager.whiteColor,
-                                          fontSize: 16.sp,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }
-
-                                final episode = series.episodes[index];
-                                return Container(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  height: 80.h,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black.withOpacity(0.5),
-                                    borderRadius: BorderRadius.circular(5.r),
                                   ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        // Episode Title
-                                        Expanded(
-                                          child: Text(
-                                            episode.title.isNotEmpty ? episode.title : 'Episode ${index + 1}',
-                                            style: getRegularTitleStyle(
-                                              color: ColorsManager.whiteColor,
-                                              fontSize: 16.sp,
+                                  Positioned.fill(
+                                    child: Container(
+                                      color: Colors.black.withOpacity(0.8),
+                                    ),
+                                  ),
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    padding: const EdgeInsets.all(16),
+                                    itemCount: series.episodes.length,  // Use episodes length from the series data
+                                    itemBuilder: (context, index) {
+                                      final episode = series.episodes[index];
+                                      return GestureDetector(
+                                        onTap: () {
+                                          SeriesCubit.get(context).initializeMoviePlayer(
+                                            streamId: episode.id.toString(),
+                                            extension: episode.containerExtension,
+                                          );
+
+                                          print('the data clicked ${episode.containerExtension} === ${episode.id.toString()}');
+                                          if (episode.containerExtension.isEmpty || episode.id.toString().isEmpty) {
+                                            print('One or both values are empty!');
+                                          }
+
+
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => SeriesPlayerScreen(
+                                                streamId: episode.id.toString(),
+                                                extension:episode.containerExtension), // تأكد من أن الحلقة تحتوي على رابط الفيديو
                                             ),
-                                            overflow: TextOverflow.ellipsis,
+                                          );
+                                        },
+                                        child: Container(
+                                          margin: const EdgeInsets.only(bottom: 12),
+                                          height: 62.h,
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withOpacity(0.5),
+                                            borderRadius: BorderRadius.circular(5.r),
                                           ),
-                                        ),
-                                        // Play and View Icons
-                                        Row(
-                                          children: [
-                                            Icon(Icons.play_circle_filled, color: const Color(0xff97A6C0), size: 28),
-                                            SizedBox(width: 12.w),
-                                            Icon(Icons.remove_red_eye, color: Colors.white, size: 28),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                           /* Stack(
-                              children: [
-                                ClipRect(
-                                  child: Image.asset(
-                                    'assets/images/seriess.png',
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-
-                                Positioned.fill(
-                                  child: Container(
-                                    color: Colors.black.withOpacity(0.8),
-                                  ),
-                                ),
-                                ListView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  padding: const EdgeInsets.all(16),
-                                  itemCount: 5,
-                                  itemBuilder: (context, index) {
-                                    return GestureDetector(
-                                      onTap: (){
-
-                                      },
-                                      child: Container(
-                                        margin: const EdgeInsets.only(bottom: 12),
-                                        height: 62.h,
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withOpacity(0.5),
-                                          borderRadius: BorderRadius.circular(5.r),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                'Episode ${index + 1}',
-                                                style: getRegularTitleStyle(
-                                                  color: ColorsManager.whiteColor,
-                                                  fontSize: 16.sp,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  'Episode ${episode.episodeNum}',
+                                                  style: getRegularTitleStyle(
+                                                    color: ColorsManager.whiteColor,
+                                                    fontSize: 16.sp,
+                                                  ),
                                                 ),
-                                              ),
-                                              Row(
-                                                children: [
-                                                  Icon(Icons.play_circle_filled, color: Color(0xff97A6C0), size: 28),
-                                                  SizedBox(width: 12.w), // Space between icons
-                                                  Icon(Icons.remove_red_eye, color: Colors.white, size: 28),
-                                                ],
-                                              ),
-                                            ],
+                                                Row(
+                                                  children: [
+                                                    Icon(Icons.play_circle_filled, color: Color(0xff97A6C0), size: 28),
+                                                    SizedBox(width: 12.w),
+                                                    Icon(Icons.remove_red_eye, color: Colors.white, size: 28),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),*/
-
-
-
-
-
-
-
-                          ],
+                                      );
+                                    },
+                                  ),
+                                ],
+                              );
+                            } else {
+                              return Center(child: Text("No data available"));
+                            }
+                          },
                         ),
                         SizedBox(height: 100),
                       ],
@@ -394,6 +354,7 @@ class SeriesDetailsView extends StatelessWidget {
       ),
     );
   }
+
   Widget buildRatingStars(String rating) {
     // Convert the rating string to an integer
     int ratingValue = int.tryParse(rating) ?? 0;
@@ -413,6 +374,7 @@ class SeriesDetailsView extends StatelessWidget {
       children: stars,
     );
   }
+
   Widget _buildCastItem(String name, String imageUrl) {
     return Column(
       children: [
@@ -427,6 +389,4 @@ class SeriesDetailsView extends StatelessWidget {
       ],
     );
   }
-
 }
-

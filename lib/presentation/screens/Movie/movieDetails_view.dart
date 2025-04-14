@@ -216,7 +216,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               ),
             ),
             SizedBox(height: 10.h),
-            Padding(
+           /* Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Text(
                 'Director: ${widget.movieDetail.director ?? 'Unknown Director'}',
@@ -226,7 +226,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 20.h),
+            SizedBox(height: 20.h),*/
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(

@@ -346,9 +346,9 @@ class MovieCubit extends Cubit<MovieState> {
 
   /// cast image and name for the details of movie ///
 
-  Future<List<CastMember>> fetchCastData(List<String> arrCast) async {
+  Future<List<CastMemberModel>> fetchCastData(List<String> arrCast) async {
     final apiKey = '6c4fc80fb22f43f77d2ed3f68b5ef57f';
-    List<CastMember> castMembers = [];
+    List<CastMemberModel> castMembers = [];
 
     for (int i = 0; i < arrCast.length; i++) {
       final name = arrCast[i];
@@ -363,24 +363,24 @@ class MovieCubit extends Cubit<MovieState> {
             final actor = results[0]; // Get the top result
             final profilePath = actor['profile_path'];
             final profileImage = profilePath != null
-                ? 'https://image.tmdb.org/t/p/w500/$profilePath'
+                ? 'https://image.tmdb.org/t/p/w500$profilePath'
                 : '';
 
-            castMembers.add(CastMember(name: name, profileImage: profileImage));
+            castMembers.add(CastMemberModel(name: name, profileImage: profileImage));
           } else {
-            castMembers.add(CastMember(name: name, profileImage: '')); // fallback
+            castMembers.add(CastMemberModel(name: name, profileImage: '')); // fallback
           }
         }
       } catch (e) {
         print('Error fetching $name: $e');
-        castMembers.add(CastMember(name: name, profileImage: ''));
+        castMembers.add(CastMemberModel(name: name, profileImage: ''));
       }
     }
 
     return castMembers;
   }
 
-  List<CastMember> castList = [];
+  List<CastMemberModel> castList = [];
 
   Future<void> loadCastData(List<String> castNames) async {
     emit(CastLoadingState());

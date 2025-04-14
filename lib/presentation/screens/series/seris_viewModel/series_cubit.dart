@@ -2,13 +2,19 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
+import 'package:chewie/chewie.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:video_player/video_player.dart';
+import 'package:wish/presentation/screens/series/seris_viewModel/person_model.dart';
 import 'package:wish/presentation/screens/series/seris_viewModel/series_details_model.dart';
 import 'package:wish/presentation/screens/series/seris_viewModel/series_model.dart';
 import 'package:wish/presentation/screens/series/seris_viewModel/series_states.dart';
+
+import '../../Movie/movie_viewModel/cast_model.dart';
+import 'cast_model.dart';
 
 class SeriesCubit extends Cubit<SeriesState> {
   SeriesCubit() : super(SeriesInitial());
@@ -22,7 +28,8 @@ class SeriesCubit extends Cubit<SeriesState> {
   // == Category LOGIC == //
   final List<String> categories = [];
   String selectedCategory = '';
-  Map<String, String> categoryIdToNameMap = {};  // To map category_id to category_name
+  Map<String, String> categoryIdToNameMap = {
+  }; // To map category_id to category_name
 
   Future<void> getSeriesCategories() async {
     emit(SeriesLoadingState());
@@ -39,7 +46,8 @@ class SeriesCubit extends Cubit<SeriesState> {
 
         categories.clear();
         categoryIdToNameMap.clear();
-        categories.addAll(['Favorite', 'Recent View']); // Keep these as fallback categories
+        categories.addAll(
+            ['Favorite', 'Recent View']); // Keep these as fallback categories
 
         for (var item in data) {
           final category = SeriesCategory.fromJson(item);
@@ -48,7 +56,9 @@ class SeriesCubit extends Cubit<SeriesState> {
         }
 
         // Automatically select the first item from the API response as the default category
-        selectedCategory = categories.isNotEmpty ? categories[2] : ''; // Skipping 'Favorite' and 'Recent View'
+        selectedCategory = categories.isNotEmpty
+            ? categories[2]
+            : ''; // Skipping 'Favorite' and 'Recent View'
 
         // ✅ Automatically filter series based on the first category
         changeCategory(selectedCategory!);
@@ -67,7 +77,6 @@ class SeriesCubit extends Cubit<SeriesState> {
   List<Series> filteredSeries = [];
 
 
-
   Future<void> fetchSeriesForCategory(String categoryName) async {
     emit(SeriesLoadingState());
 
@@ -78,15 +87,22 @@ class SeriesCubit extends Cubit<SeriesState> {
         'action': 'get_series',
       });
 
+      // Print the response for debugging
+      print("Response Status Code: ${response.statusCode}");
+      print("Response Data: ${response.data}");
+
       if (response.statusCode == 200) {
         final List data = response.data;
 
         allSeries = data.map<Series>((e) {
           final enrichedData = {
             ...e,
-            'categories': [getCategoryNameFromId(e['category_id']?.toString() ?? 'Unknown')],
+            'categories': [
+              getCategoryNameFromId(e['category_id']?.toString() ?? 'Unknown')
+            ],
           };
-          Map<String, dynamic> validData = Map<String, dynamic>.from(enrichedData);
+          Map<String, dynamic> validData = Map<String, dynamic>.from(
+              enrichedData);
           return Series.fromJson(validData);
         }).toList();
 
@@ -113,10 +129,12 @@ class SeriesCubit extends Cubit<SeriesState> {
 
     if (newCategory == 'Favorite') {
       await loadFavoritesFromPrefs();
-      filteredSeries = favoriteSeriesList.map((map) => Series.mapToSeries(map)).toList();
+      filteredSeries =
+          favoriteSeriesList.map((map) => Series.mapToSeries(map)).toList();
     } else if (newCategory == 'Recent View') {
       await loadRecentFromPrefs();
-      filteredSeries = favoriteSeriesList.map((map) => Series.mapToSeries(map)).toList();
+      filteredSeries =
+          favoriteSeriesList.map((map) => Series.mapToSeries(map)).toList();
     } else {
       await fetchSeriesForCategory(newCategory);
     }
@@ -139,7 +157,8 @@ class SeriesCubit extends Cubit<SeriesState> {
 
     favoriteSeriesList = savedList.map((e) {
       final Map<String, dynamic> decoded = jsonDecode(e);
-      final Map<String, String> stringMap = decoded.map((key, value) => MapEntry(key, value.toString()));
+      final Map<String, String> stringMap = decoded.map((key, value) =>
+          MapEntry(key, value.toString()));
       return stringMap;
     }).toList();
 
@@ -161,6 +180,11 @@ class SeriesCubit extends Cubit<SeriesState> {
 
     emit(SeriesSuccessState());
   }
+
+
+
+
+
   /*Future<void> saveToFavorites(Series series) async {
     final prefs = await SharedPreferences.getInstance();
     final savedList = prefs.getStringList('favorite_series') ?? [];
@@ -174,7 +198,6 @@ class SeriesCubit extends Cubit<SeriesState> {
     await prefs.setStringList('favorite_series', updatedList);
     emit(ChangeCategoryState());
   }*/
-
 
 
   Future<void> loadRecentFromPrefs() async {
@@ -193,7 +216,8 @@ class SeriesCubit extends Cubit<SeriesState> {
     final prefs = await SharedPreferences.getInstance();
     recentSeriesList.removeWhere((item) => item['title'] == series['title']);
     recentSeriesList.insert(0, series); // insert at beginning
-    if (recentSeriesList.length > 10) recentSeriesList = recentSeriesList.sublist(0, 10); // limit to 20
+    if (recentSeriesList.length > 10)
+      recentSeriesList = recentSeriesList.sublist(0, 10); // limit to 20
     final encoded = recentSeriesList.map((item) => jsonEncode(item)).toList();
     await prefs.setStringList('recent_series', encoded);
   }
@@ -202,11 +226,13 @@ class SeriesCubit extends Cubit<SeriesState> {
     final prefs = await SharedPreferences.getInstance();
 
     // Check if the series is already in the favorite list
-    final exists = favoriteSeriesList.any((item) => item['title'] == series['title']);
+    final exists = favoriteSeriesList.any((item) =>
+    item['title'] == series['title']);
 
     // Add or remove from the favorite list
     if (exists) {
-      favoriteSeriesList.removeWhere((item) => item['title'] == series['title']);
+      favoriteSeriesList.removeWhere((item) =>
+      item['title'] == series['title']);
     } else {
       favoriteSeriesList.add(series);
     }
@@ -231,30 +257,46 @@ class SeriesCubit extends Cubit<SeriesState> {
         'series_id': seriesId,
       });
 
+      // طباعة الاستجابة
+      print("Response Status Code: ${response.statusCode}");
+      print("Response Data: ${response.data}");
+
       if (response.statusCode == 200 && response.data is Map<String, dynamic>) {
         final Map<String, dynamic> data = response.data;
+
         final info = data['info'] ?? {};
+        List episodeList = [];
         final episodesMap = data['episodes'] ?? {};
 
-        List episodeList = [];
-        episodesMap.forEach((key, value) {
-          if (value is List) {
-            episodeList.addAll(value);
-          }
-        });
+        if (episodesMap is Map<String, dynamic>) {
+          // تعديل هنا: التأكد من أن الحلقات تتواجد تحت الموسم الصحيح
+          episodesMap.forEach((season, episodes) {
+            if (episodes is List) {
+              episodeList.addAll(episodes);
+            }
+          });
+        } else {
+          print("⚠️ Episodes map is not of expected type.");
+        }
 
+        // Now we prepare the final JSON with episodes
         final Map<String, dynamic> finalJson = {
           ...info,
           'series_id': seriesId,
           'episodes': episodeList,
         };
 
+        // Create Series object
         currentSeriesDetails = Series.fromJson(finalJson);
+
+        // Emit updated state
         emit(SeriesDetailsLoadedState(currentSeriesDetails!));
       } else {
+        print("⚠️ Response format is unexpected: ${response.statusCode}");
         emit(SeriesErrorState("Unexpected response format"));
       }
     } catch (e) {
+      print("❌ Error fetching series details: $e");
       emit(SeriesErrorState("Failed to fetch series details"));
     }
   }
@@ -284,4 +326,101 @@ class SeriesCubit extends Cubit<SeriesState> {
     selectedSeason = newSeason;
     emit(ChangeCategorySeasonsState());
   }
+
+
+  Future<List<CastMemberModel>> fetchCastData(List<String> arrCast) async {
+    final apiKey = '6c4fc80fb22f43f77d2ed3f68b5ef57f';
+    List<CastMemberModel> castMembers = [];
+
+    final futures = arrCast.map((name) async {
+      final url = 'https://api.themoviedb.org/3/search/person?api_key=$apiKey&query=$name';
+      try {
+        final response = await Dio().get(url);
+        if (response.statusCode == 200 && response.data['results'] != null) {
+          final results = response.data['results'];
+          if (results.isNotEmpty) {
+            final actor = results[0]; // Get the top result
+            final profilePath = actor['profile_path'];
+            final profileImage = profilePath != null
+                ? 'https://image.tmdb.org/t/p/w500$profilePath'
+                : '';
+
+            // Collect all known_for images
+            List<String> knownForImages = [];
+            final knownFor = actor['known_for'] ?? [];
+            for (var show in knownFor) {
+              final showPosterPath = show['poster_path'];
+              if (showPosterPath != null) {
+                knownForImages.add('https://image.tmdb.org/t/p/w500$showPosterPath');
+              }
+            }
+
+            // Create CastMemberModel with all known images
+            return CastMemberModel(name: name, profileImage: profileImage, );
+          }
+        }
+      } catch (e) {
+        print('Error fetching $name: $e');
+      }
+      return CastMemberModel(name: name, profileImage: '',); // fallback
+    }).toList();
+
+    // Wait for all requests to complete
+    final results = await Future.wait(futures);
+    castMembers.addAll(results);
+
+    return castMembers;
+  }
+
+  List<CastMemberModel> castList = [];
+
+  Future<void> loadCastData(List<String> castNames) async {
+    emit(CastLoadingState());
+    castList = await fetchCastData(castNames);
+    emit(CastLoadedState());
+  }
+
+
+  /// moviePlayer link method ///
+  ChewieController? chewieController;
+
+  bool isMoviePlayerInitialized = false;
+
+  Future<void> initializeMoviePlayer({
+    required String streamId,
+    required String extension,
+  }) async {
+    if (!isMoviePlayerInitialized) {
+      isMoviePlayerInitialized = true;
+      emit(MoviePlayerChangeValu());
+    }
+
+    emit(SeriesPlayerLoade());
+
+    try {
+      final movieUrl =
+          'http://tgdns4k.com:8080/series/$username/$password/$streamId.$extension';
+
+      final videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(movieUrl));
+
+      await videoPlayerController.initialize();
+
+      chewieController = ChewieController(
+        videoPlayerController: videoPlayerController,
+        autoPlay: true,
+        looping: false,
+      );
+
+      emit(SeriesPlayerLoaded(chewieController!));
+    } catch (e) {
+      emit(SeriesPlayerError("Failed to load video: $e"));
+    }
+  }
+
+
+  void disposePlayer() {
+    chewieController?.dispose();
+    chewieController = null;
+  }
+
 }

@@ -1,6 +1,6 @@
-class CastMember {
+class CastMemberModel {
   final String name;
   final String profileImage;
 
-  CastMember({required this.name, required this.profileImage});
+  CastMemberModel({required this.name, required this.profileImage});
 }

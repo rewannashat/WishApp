@@ -337,8 +337,7 @@ class _SeriesViewState extends State<SeriesView> {
                             // Call getSeriesDetails method from SeriesCubit
                             context.read<SeriesCubit>().getSeriesDetails(seriesId);
                             //  context.read<SeriesCubit>().debugEpisodes(seriesItem);
-
-
+                            // Debug: print all cast member names
 
                             final result = await Navigator.push(
                               context,
@@ -496,7 +495,8 @@ class _SeriesViewState extends State<SeriesView> {
   @override
   void dispose() {
     _focusNode.dispose();
-    _removeOverlay();
+    _removeOverlay(); // remove overlay safely
     super.dispose();
   }
+
 }
