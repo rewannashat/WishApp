@@ -13,11 +13,13 @@ class LivePlayerScreen extends StatefulWidget {
   final int streamId;
   final String name;
   final String streamUrl;
+  final String thumbnail;
 
   LivePlayerScreen({
     required this.streamId,
     required this.name,
     required this.streamUrl,
+    required this.thumbnail,
   });
 
   @override
@@ -26,18 +28,21 @@ class LivePlayerScreen extends StatefulWidget {
 
 class _LivePlayerScreenState extends State<LivePlayerScreen> {
   late BetterPlayerController _betterPlayerController;
-  late LiveStream series;
-  bool isFavorite = false;  // Track the favorite state
+  late LiveStream liveStream;
+
 
   @override
   void initState() {
     super.initState();
 
-    series = LiveStream(
+    liveStream = LiveStream(
       streamId: widget.streamId,
       name: widget.name,
       streamUrl: widget.streamUrl,
+      thumbnail: widget.thumbnail,
     );
+
+
 
     // Initialize the player
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
@@ -61,25 +66,14 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
       betterPlayerDataSource: dataSource,
     );
 
-    // Load the favorites status after initializing
-    _loadFavoriteStatus();
   }
 
-  // Load favorite status from SharedPreferences
-  void _loadFavoriteStatus() async {
-    // Ensure the Cubit has the latest list of favorites loaded
-    await LiveCubit.get(context).loadFavoritesFromPrefs();
-
-    // After favorites are loaded, check if the series is in the favorites list
-    bool isFav = LiveCubit.get(context).isSeriesFavorite(series.toMap());
-    setState(() {
-      isFavorite = isFav;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     LiveCubit cubit = LiveCubit.get(context);
+    bool isFavorite = cubit.isSeriesFavorite(liveStream.toMap());
+
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -112,29 +106,25 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
               Positioned(
                 top: 40,
                 right: 16,
-                child: GestureDetector(
-                  onTap: () async {
-                    await cubit.toggleFavorite(series.toMap());
-
-                    // Update the UI after toggling
-                    setState(() {
-                      isFavorite = !isFavorite;
-                    });
-
-                    // Navigate back with updated favorite state
-                    Navigator.pop(context, {'isFav': isFavorite, 'id': series.streamId});
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: Colors.white24,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Colors.white24,
+                    shape: BoxShape.circle,
+                  ),
+                  child:   IconButton(
+                    icon: Icon(
                       isFavorite ? Icons.favorite : Icons.favorite_border,
                       color: isFavorite ? Colors.red : Colors.white,
                       size: 28,
                     ),
+                    onPressed: () async {
+                      // Toggle favorite state using Cubit
+                      await cubit.toggleFavorite(liveStream.toMap());
+
+                      // Navigate back with updated favorite state
+                      Navigator.pop(context, {'isFav': !isFavorite, 'id': liveStream.streamId});
+                    },
                   ),
                 ),
               ),
@@ -150,5 +140,13 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
     _betterPlayerController.dispose();
     super.dispose();
   }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final cubit = LiveCubit.get(context);
+    cubit.addToRecent(liveStream.toMap());
+  }
+
 }
 

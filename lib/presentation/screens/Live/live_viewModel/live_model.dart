@@ -24,15 +24,16 @@ class LiveStream {
   }
 
   // Map LiveStream to another LiveStream (if needed)
-  LiveStream mapToLiveStream() {
+  factory LiveStream.mapToLiveStream(Map<String, String> map) {
     return LiveStream(
-      name: this.name,
-      streamId: this.streamId,
-      thumbnail: this.thumbnail,
-      streamUrl: this.streamUrl,
-      categoryId: this.categoryId,
+      name: map['title'] ?? '', // ✅ Use 'name' instead of 'title'
+      streamId: int.tryParse(map['stream_id'] ?? '0') ?? 0,
+      thumbnail: map['stream_icon'] ?? '',
+      streamUrl: map['stream_url'] ?? '',
+      categoryId: map['category_id'] ?? '',
     );
   }
+
 
   // Add the toMap method to convert LiveStream to a Map
   Map<String, String> toMap() {

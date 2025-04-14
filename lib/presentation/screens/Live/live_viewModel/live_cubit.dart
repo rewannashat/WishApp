@@ -74,22 +74,17 @@ class LiveCubit extends Cubit<LiveStates> {
     emit(ChangeCategoryState());
 
     if (newCategory == 'Favorite') {
-      await loadFavoritesFromPrefs(); // Load the favorites from shared preferences
-      filteredLive = favoriteLiveList
-          .map((map) => LiveStream.fromJson(map)) // Map the map to LiveStream objects
-          .toList();
+      await loadFavoritesFromPrefs();
+      filteredLive = favoriteLiveList.map((map) => LiveStream.mapToLiveStream(map)).toList();
     } else if (newCategory == 'Recent View') {
-      await loadRecentFromPrefs(); // Load the recently viewed from shared preferences
-      filteredLive = recentStreams
-          .map((map) => LiveStream.fromJson(map)) // Map the map to LiveStream objects
-          .toList();
+      await loadRecentFromPrefs();
+      filteredLive = recentLiveList.map((map) => LiveStream.mapToLiveStream(map)).toList();
     } else {
-      await getAllLiveChannels(newCategory); // Fetch other categories from the API
+      await getAllLiveChannels(newCategory);
     }
 
-    emit(ChangeCategoryState()); // Emit a state to indicate the change is complete
+    emit(ChangeCategoryState());
   }
-
 
   void toggleDropdown() {
     emit(DropdownToggledState());
@@ -111,6 +106,9 @@ class LiveCubit extends Cubit<LiveStates> {
 
       if (response.statusCode == 200) {
         final List data = response.data;
+
+        print(response.data);  // Check if stream_icon is present
+
 
         allLive = data.map<LiveStream>((e) {
           final enrichedData = {
@@ -152,41 +150,151 @@ class LiveCubit extends Cubit<LiveStates> {
 
 
 
-  void addToRecentStreams(Map<String, dynamic> stream) async {
-    // Assuming you save `stream` in SharedPreferences
-    // Example: Save stream data to SharedPreferences (You can adjust this logic as per your app's needs)
-    final prefs = await SharedPreferences.getInstance();
-    recentStreams.add(stream); // Add to the list
 
-    // Optionally: Limit the recent streams to, e.g., 10
-    if (recentStreams.length > 10) {
-      recentStreams.removeAt(0); // Remove the first (oldest) stream
-    }
 
-    // Save recent streams to SharedPreferences
-    prefs.setStringList('recent_streams', recentStreams.map((stream) => jsonEncode(stream)).toList());
-  }
-  Future<void> loadRecentStreams() async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String>? recentStreamStrings = prefs.getStringList('recent_live');
 
-    if (recentStreamStrings != null) {
-      // Convert List<dynamic> to List<Map<String, dynamic>>
-      recentStreams = recentStreamStrings
-          .map((streamString) => Map<String, dynamic>.from(jsonDecode(streamString)))
-          .toList();
-    }
+
+  /// fav
+  // == Favorite local logic == //
+  List<Map<String, String>> favoriteLiveList = [];
+  List<Map<String, String>> recentLiveList = [];
+
+// Method to check if a series is in the favorite list
+  bool isSeriesFavorite(Map<String, dynamic> series) {
+    return favoriteLiveList.any((item) => item['title'] == series['title']);
   }
 
+  Future<void> loadFavoritesFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedList = prefs.getStringList('favorite_live') ?? [];
+
+    // Map saved list data to LiveStream objects
+    favoriteLiveList = savedList.map((e) {
+      final Map<String, dynamic> decoded = jsonDecode(e);
+      final Map<String, String> stringMap = decoded.map((key, value) {
+        return MapEntry(key, value?.toString() ?? '');  // Ensure no null values
+      });
+      return stringMap;
+    }).toList();
+
+    // Debug print to see if the data is loaded correctly
+    print("Loaded Favorites: $favoriteLiveList");
+
+    // Convert favorites to LiveStream objects with default values for missing data
+    filteredLive = favoriteLiveList.map((map) {
+      return LiveStream(
+        name: map['title'] ?? 'Untitled',  // Ensure non-null values
+        streamId: int.tryParse(map['stream_id'] ?? '0') ?? 0,
+        thumbnail: map['stream_icon'].toString() ?? 'default_image_url',
+        streamUrl: map['stream_url'] ?? '',
+        categoryId: map['category_id'] ?? 'Unknown',
+      );
+    }).toList();
+
+    print("Loaded Favorites: $filteredLive");
+
+
+    emit(GetStreamsSuccessState());
+  }
 
 
 
 
 
+  Future<void> toggleFavorite(Map<String, String?> series) async {
+    final prefs = await SharedPreferences.getInstance();
 
-  // Pagination
+    // Check if the series is already in the favorite list
+    final exists = favoriteLiveList.any((item) => item['title'] == series['name']);
 
-  bool isLoading = false;
+    // Add or remove from the favorite list
+    if (exists) {
+      favoriteLiveList.removeWhere((item) => item['title'] == series['name']);
+    } else {
+      // Ensure that no null values are passed in the map
+      final updatedSeries = {
+        'title': series['name'] ?? 'Unknown Title', // Fallback if title is null
+        'stream_id': series['stream_id']?.toString() ?? '0', // Fallback if stream_id is null
+        'stream_icon': series['stream_icon'] ?? 'default_image_url', // Provide a fallback image URL
+        'stream_url': series['stream_url'] ?? '', // Fallback if stream_url is null
+        'category_id': series['category_id'] ?? '', // Fallback if category_id is null
+      };
+
+      favoriteLiveList.add(updatedSeries);
+    }
+
+    // Store the updated list in SharedPreferences
+    final encoded = favoriteLiveList.map((item) => jsonEncode(item)).toList();
+    await prefs.setStringList('favorite_live', encoded);
+
+    // Emit a state change to notify the UI
+    emit(ChangeCategoryState());
+  }
+
+  // Load recent views from SharedPreferences
+  Future<void> loadRecentFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedList = prefs.getStringList('recent_live') ?? [];
+
+    // Map saved list data to LiveStream objects
+    recentLiveList = savedList.map((e) {
+      final Map<String, dynamic> decoded = jsonDecode(e);
+      final Map<String, String> stringMap = decoded.map((key, value) {
+        return MapEntry(key, value?.toString() ?? '');  // Ensure no null values
+      });
+      return stringMap;
+    }).toList();
+
+    // Debug print to see if the data is loaded correctly
+    print("Loaded Recent: $recentLiveList");
+
+    // Convert favorites to LiveStream objects with default values for missing data
+    filteredLive = recentLiveList.map((map) {
+      return LiveStream(
+        name: map['title'] ?? 'Untitled',
+        streamId: int.tryParse(map['stream_id'] ?? '0') ?? 0,
+        thumbnail: map['stream_icon'].toString() ?? 'default_image_url',
+        streamUrl: map['stream_url'] ?? '',
+        categoryId: map['category_id'] ?? 'Unknown',
+      );
+    }).toList();
+
+    emit(ChangeCategoryState()); // Trigger the state change to update the UI
+  }
+
+  // Add a new series to recent views
+  Future<void> addToRecent(Map<String, String> series) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Convert incoming map to a consistent format with 'name' key
+    final updatedSeries = {
+      'title': series['name'] ?? 'Unknown Title',
+      'stream_id': series['stream_id']?.toString() ?? '0',
+      'stream_icon': series['stream_icon'] ?? 'default_image_url',
+      'stream_url': series['stream_url'] ?? '',
+      'category_id': series['category_id'] ?? '',
+    };
+
+    // Remove if it already exists (by 'name')
+    recentLiveList.removeWhere((item) => item['name'] == updatedSeries['title']);
+
+    // Insert at the top
+    recentLiveList.insert(0, updatedSeries);
+
+    // Limit to most recent 10
+    if (recentLiveList.length > 10) {
+      recentLiveList = recentLiveList.sublist(0, 10);
+    }
+
+    // Save to SharedPreferences
+    final encoded = recentLiveList.map((item) => jsonEncode(item)).toList();
+    await prefs.setStringList('recent_live', encoded);
+
+    // Optional: emit state update if you want to refresh the UI
+    emit(ChangeCategoryState());
+  }
+
+
 
 
 
@@ -211,86 +319,5 @@ class LiveCubit extends Cubit<LiveStates> {
     final item = filteredLive.removeAt(oldIndex);
     filteredLive.insert(newIndex, item);
     emit(LiveUpdatedState(List.from(filteredLive)));
-  }
-
-  /// fav
-  // == Favorite local logic == //
-  List<Map<String, String>> favoriteLiveList = [];
-  List<Map<String, String>> recentLiveList = [];
-
-// Method to check if a series is in the favorite list
-  bool isSeriesFavorite(Map<String, dynamic> series) {
-    return favoriteLiveList.any((item) => item['title'] == series['title']);
-  }
-
-  Future<void> loadFavoritesFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedList = prefs.getStringList('favorite_live') ?? [];
-
-    // Map saved list data to LiveStream objects
-    favoriteLiveList = savedList.map((e) {
-      final Map<String, dynamic> decoded = jsonDecode(e);
-      final Map<String, String> stringMap = decoded.map((key, value) => MapEntry(key, value.toString()));
-      return stringMap;
-    }).toList();
-
-    // Convert favorites to LiveStream objects
-    filteredLive = favoriteLiveList.map((map) {
-      return LiveStream(
-        name: map['name'] ?? 'Untitled', // Assuming the 'title' field
-        streamId: int.tryParse(map['series_id'] ?? '0') ?? 0, // Assuming 'series_id' is numeric
-        thumbnail: map['stream_icon'], // Assuming 'cover' is the thumbnail field
-        streamUrl: map['stream_url'], // Assuming 'stream_url' exists
-        categoryId: map['categoryId'].toString(),
-      );
-    }).toList();
-
-    emit(GetStreamsSuccessState());
-  }
-
-
-
-
-
-  Future<void> loadRecentFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedList = prefs.getStringList('recent_series') ?? [];
-
-    recentLiveList = savedList.map((e) {
-      final Map<String, dynamic> decoded = jsonDecode(e);
-      return decoded.map((key, value) => MapEntry(key, value.toString()));
-    }).toList();
-
-    emit(ChangeCategoryState());
-  }
-
-  Future<void> addToRecent(Map<String, String> series) async {
-    final prefs = await SharedPreferences.getInstance();
-    recentLiveList.removeWhere((item) => item['title'] == series['title']);
-    recentLiveList.insert(0, series); // insert at beginning
-    if (recentLiveList.length > 10) recentLiveList = recentLiveList.sublist(0, 10); // limit to 20
-    final encoded = recentLiveList.map((item) => jsonEncode(item)).toList();
-    await prefs.setStringList('recent_series', encoded);
-  }
-
-  Future<void> toggleFavorite(Map<String, String> series) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    // Check if the series is already in the favorite list
-    final exists = favoriteLiveList.any((item) => item['title'] == series['title']);
-
-    // Add or remove from the favorite list
-    if (exists) {
-      favoriteLiveList.removeWhere((item) => item['title'] == series['title']);
-    } else {
-      favoriteLiveList.add(series);
-    }
-
-    // Store the updated list in SharedPreferences
-    final encoded = favoriteLiveList.map((item) => jsonEncode(item)).toList();
-    await prefs.setStringList('favorite_live', encoded);
-
-    // Emit a state change to notify the UI
-    emit(ChangeCategoryState());
   }
 }

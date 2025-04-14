@@ -231,14 +231,19 @@ class _LiveViewState extends State<LiveView> {
                 onTap: () {
                   final streamUrl =
                       'http://tgdns4k.com:8080/live/6665e332412/12977281747688/${stream.streamId}.m3u8';
+
+
+                  // Navigate to the live player screen
                   NormalNav(
                     ctx: context,
                     screen: LivePlayerScreen(
                       streamId: stream.streamId,
                       name: stream.name,
                       streamUrl: streamUrl,
+                      thumbnail: stream.thumbnail.toString(),
                     ),
                   );
+
                 },
                 child: Stack(
                   children: [
