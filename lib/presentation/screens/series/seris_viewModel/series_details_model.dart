@@ -8,6 +8,7 @@ class Series {
   final String seriesId;
   final List<String> categories;
   final String rating;
+  final List<String> seasons;  // Add seasons field
 
   Series({
     required this.title,
@@ -19,10 +20,10 @@ class Series {
     required this.categories,
     required this.genre,
     required this.rating,
+    required this.seasons,  // Add seasons to constructor
   });
 
   factory Series.fromJson(Map<String, dynamic> json) {
-    // Handle cast - can be list or single string
     List<CastMember> castList = [];
     if (json['cast'] != null) {
       if (json['cast'] is List) {
@@ -42,7 +43,6 @@ class Series {
       }
     }
 
-    // Handle episodes safely
     List<Episode> episodesList = [];
     if (json['episodes'] != null && json['episodes'] is List) {
       episodesList = (json['episodes'] as List)
@@ -50,17 +50,22 @@ class Series {
           .toList();
     }
 
-    // Handle genres
     List<String> genreList = [];
     if (json['genre'] != null && json['genre'] is String) {
       genreList = (json['genre'] as String).split(", ").toList();
     }
 
-    // Handle categories safely as List<String>
     List<String> categoriesList = [];
     if (json['categories'] != null && json['categories'] is List) {
       categoriesList = List<String>.from(
         (json['categories'] as List).map((x) => x.toString()),
+      );
+    }
+
+    List<String> seasonsList = [];
+    if (json['seasons'] != null && json['seasons'] is List) {
+      seasonsList = List<String>.from(
+        (json['seasons'] as List).map((x) => x.toString()),
       );
     }
 
@@ -74,6 +79,7 @@ class Series {
       categories: categoriesList,
       genre: genreList,
       rating: json['rating']?.toString() ?? '',
+      seasons: seasonsList,  // Add seasons list
     );
   }
 
@@ -88,9 +94,36 @@ class Series {
       'categories': categories,
       'genre': genre.join(", "),
       'rating': rating,
+      'seasons': seasons,  // Add seasons to JSON
     };
   }
+
+  Map<String, String> toMap() {
+    return {
+      'title': title,
+      'series_id': seriesId,
+      'cover': imageUrl,
+      'description': description,
+    };
+  }
+
+  factory Series.mapToSeries(Map<String, String> map) {
+    return Series(
+      title: map['title'] ?? '',
+      imageUrl: map['cover'] ?? '',
+      description: map['description'] ?? '',
+      cast: [],
+      episodes: [],
+      seriesId: map['stream_id'] ?? '',
+      categories: [],
+      genre: [],
+      rating: '',
+      seasons: [],
+    );
+  }
+
 }
+
 
 class CastMember {
   final String name;
@@ -114,22 +147,97 @@ class CastMember {
 }
 
 class Episode {
+  final int id;
+  final int episodeNum;
   final String title;
-  final String airDate;
+  final String containerExtension;
+  final String duration;
+  final int durationSecs;
+  final VideoInfo? video;
 
-  Episode({required this.title, required this.airDate});
+  Episode({
+    required this.id,
+    required this.episodeNum,
+    required this.title,
+    required this.containerExtension,
+    required this.duration,
+    required this.durationSecs,
+    required this.video,
+  });
 
   factory Episode.fromJson(Map<String, dynamic> json) {
+    final info = json['info'] ?? {};
+    final video = info['video'] != null ? VideoInfo.fromJson(info['video']) : null;
+
     return Episode(
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      episodeNum: json['episode_num'] is int
+          ? json['episode_num']
+          : int.tryParse(json['episode_num'].toString()) ?? 0,
       title: json['title'] ?? '',
-      airDate: json['air_date'] ?? '',
+      containerExtension: json['container_extension'] ?? '',
+      duration: info['duration'] ?? '',
+      durationSecs: info['duration_secs'] is int
+          ? info['duration_secs']
+          : int.tryParse(info['duration_secs'].toString()) ?? 0,
+      video: video,
+    );
+  }
+
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'episode_num': episodeNum,
+      'title': title,
+      'container_extension': containerExtension,
+      'info': {
+        'duration': duration,
+        'duration_secs': durationSecs,
+        'video': video?.toJson(),
+      },
+    };
+  }
+
+
+}
+
+class VideoInfo {
+  final int index;
+  final String codecName;
+  final String codecLongName;
+  final String profile;
+  final String codecType;
+
+  VideoInfo({
+    required this.index,
+    required this.codecName,
+    required this.codecLongName,
+    required this.profile,
+    required this.codecType,
+  });
+
+  factory VideoInfo.fromJson(Map<String, dynamic> json) {
+    return VideoInfo(
+      index: json['index'] ?? 0,
+      codecName: json['codec_name'] ?? '',
+      codecLongName: json['codec_long_name'] ?? '',
+      profile: json['profile'] ?? '',
+      codecType: json['codec_type'] ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'title': title,
-      'air_date': airDate,
+      'index': index,
+      'codec_name': codecName,
+      'codec_long_name': codecLongName,
+      'profile': profile,
+      'codec_type': codecType,
     };
   }
 }
+
+
+
+

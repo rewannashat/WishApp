@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:ui';
 
@@ -235,16 +236,16 @@ class _SeriesViewState extends State<SeriesView> {
                 }
 
                 // Handle no data state
-                if (state is SeriesErrorState || cubit.filteredSeries.isEmpty) {
+                if (state is SeriesErrorState || cubit.filteredSeries.isEmpty ) {
                   return Center(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 20),
                       child: Column(
                         children: [
-                          SpinKitFadingCircle(
+                        /*  SpinKitFadingCircle(
                             color: Colors.white,
                             size: 50.0,
-                          ),
+                          ),*/
                           Text(
                             'No Series Found!',
                             style: TextStyle(color: Colors.white, fontSize: 16.sp),
@@ -335,7 +336,9 @@ class _SeriesViewState extends State<SeriesView> {
 
                             // Call getSeriesDetails method from SeriesCubit
                             context.read<SeriesCubit>().getSeriesDetails(seriesId);
-                            context.read<SeriesCubit>().debugEpisodes(seriesItem);
+                          //  context.read<SeriesCubit>().debugEpisodes(seriesItem);
+
+
 
                             final result = await Navigator.push(
                               context,
@@ -429,60 +432,65 @@ class _SeriesViewState extends State<SeriesView> {
   }
 
   void _showOverlay(BuildContext context, SeriesCubit cubit) {
-    _removeOverlay();
+    _removeOverlay(); // Remove previous overlay if exists
+
+    final RenderBox renderBox = context.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+
     _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        width: 310.w,
-        child: CompositedTransformFollower(
-          link: _layerLink,
-          showWhenUnlinked: false,
-          offset: Offset(0.0, 50.0),
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              width: 280.w,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: Column(
-                children: cubit.categories.map((category) {  // Use cubit.categories here
-                  return InkWell(
-                    onTap: () {
-                      cubit.changeCategory(category);
-                      FocusScope.of(context).unfocus();
-                      _removeOverlay();
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: category == cubit.selectedCategory
-                            ? Colors.grey[700]
-                            : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      width: 280.w,
-                      padding: EdgeInsets.symmetric(
-                          vertical: 12.0, horizontal: 16.0),
-                      child: Text(
-                        category,  // Display category name
-                        style: TextStyle(color: Colors.white, fontSize: 16.0),
-                      ),
+      builder: (context) {
+        return Positioned(
+          width: size.width * 0.9,
+          child: CompositedTransformFollower(
+            link: _layerLink,
+            showWhenUnlinked: false,
+            offset: Offset(0.0, size.height * 0.1), // adjust based on where you want the overlay to appear
+            child: Material(
+              elevation: 4.0,
+              color: Colors.black.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(8),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: cubit.filteredSeries.length,
+                itemBuilder: (context, index) {
+                  final item = cubit.filteredSeries[index];
+                  return ListTile(
+                    leading: item.imageUrl != null && item.imageUrl!.startsWith('http')
+                        ? Image.network(item.imageUrl!, width: 40, height: 60, fit: BoxFit.cover)
+                        : Image.asset('assets/images/movie.png', width: 40, height: 60),
+                    title: Text(
+                      item.title ?? 'Unknown',
+                      style: TextStyle(color: Colors.white),
                     ),
+                    onTap: () async {
+                      FocusScope.of(context).unfocus(); // close keyboard
+                      _removeOverlay();
+                      context.read<SeriesCubit>().getSeriesDetails(item.seriesId!);
+
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SeriesDetailsView(series: item),
+                        ),
+                      );
+                    },
                   );
-                }).toList(),
+                },
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
+
     Overlay.of(context).insert(_overlayEntry!);
   }
 
-
   void _removeOverlay() {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
+    if (_overlayEntry != null) {
+      _overlayEntry!.remove();
+      _overlayEntry = null;
+    }
   }
 
   @override

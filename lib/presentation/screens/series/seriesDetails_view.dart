@@ -25,6 +25,7 @@ class SeriesDetailsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = SeriesCubit.get(context);
+    bool isFavorite = cubit.isSeriesFavorite(series.toMap());
     int episodeCount = series.episodes.isNotEmpty ? series.episodes.length : 1;  // Handle the case if episodes list is empty
 
     return SafeArea(
@@ -56,12 +57,16 @@ class SeriesDetailsView extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
-                                    // onPressed: () => Navigator.pop(context, {'isFav': isFavorite, 'id': index}),
-                                    onPressed: (){
-                                      Navigator.pop(context);
+                                    icon: Icon(
+                                      Icons.arrow_back,
+                                      color: ColorsManager.whiteColor,
+                                      size: 30.sp,
+                                    ),
+                                    onPressed: () => {
+                                      Navigator.pop(context)
                                     },
                                   ),
+                                  // Season Dropdown
                                   Container(
                                     height: 30.h,
                                     width: 250.w,
@@ -74,21 +79,37 @@ class SeriesDetailsView extends StatelessWidget {
                                       child: DropdownButton<String>(
                                         dropdownColor: Colors.black.withOpacity(0.5),
                                         isExpanded: true,
-                                        value: cubit.selectedcategoriesDetails,
+                                        value: cubit.selectedSeason,
                                         icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
                                         style: const TextStyle(color: Colors.white),
-                                        items: cubit.categoriesDetails.map((String value) {
+                                        items: series.seasons.isNotEmpty
+                                            ? series.seasons.map((String season) {
                                           return DropdownMenuItem<String>(
-                                            value: value,
-                                            child: Text(value,
-                                                style: getRegularTitleStyle(
-                                                    color: ColorsManager.whiteColor,
-                                                    fontSize: 12.sp)),
+                                            value: season,
+                                            child: Text(
+                                              season,
+                                              style: getRegularTitleStyle(
+                                                color: ColorsManager.whiteColor,
+                                                fontSize: 12.sp,
+                                              ),
+                                            ),
                                           );
-                                        }).toList(),
+                                        }).toList()
+                                            : [
+                                          DropdownMenuItem<String>(
+                                            value: '',
+                                            child: Text(
+                                              'No Seasons Available',
+                                              style: getRegularTitleStyle(
+                                                color: ColorsManager.whiteColor,
+                                                fontSize: 12.sp,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                         onChanged: (String? newValue) {
                                           if (newValue != null) {
-                                            cubit.changeCategoryDetails(newValue);
+                                            cubit.changeSeason(newValue);  // Update the season in cubit
                                           }
                                         },
                                       ),
@@ -96,17 +117,20 @@ class SeriesDetailsView extends StatelessWidget {
                                   ),
                                   IconButton(
                                     icon: Icon(
-                                      // isFavorite ? Icons.favorite : Icons.favorite_border,
-                                      Icons.favorite,
-                                      color: Colors.red,
-                                      //isFavorite ? Colors.red : Colors.white,
-
+                                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                                      color: isFavorite ? Colors.red : Colors.white,
                                       size: 28,
                                     ),
-                                    onPressed: () {
-                                      // cubit.toggleFavorite(index);
+                                    onPressed: () async {
+                                      // Toggle favorite state using Cubit
+                                      await cubit.toggleFavorite(series.toMap());
+
+                                      // Navigate back with updated favorite state
+                                      Navigator.pop(context, {'isFav': !isFavorite, 'id': series.seriesId});
                                     },
                                   ),
+
+
                                 ],
                               ),
                             ),
