@@ -1,14 +1,23 @@
-class StreamModel {
-  final String streamId;
+class LiveCategory {
+  final String categoryId;
   final String categoryName;
 
-  StreamModel({required this.streamId, required this.categoryName});
+  LiveCategory({
+    required this.categoryId,
+    required this.categoryName,
+  });
 
-  // Factory method to create an instance from a Map
-  factory StreamModel.fromMap(Map<String, dynamic> map) {
-    return StreamModel(
-      streamId: map['stream_id'],
-      categoryName: map['category_name'],
+  factory LiveCategory.fromJson(Map<String, dynamic> json) {
+    return LiveCategory(
+      categoryId: json['category_id'].toString(),
+      categoryName: json['category_name'] ?? 'Unknown Category',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'category_id': categoryId,
+      'category_name': categoryName,
+    };
   }
 }

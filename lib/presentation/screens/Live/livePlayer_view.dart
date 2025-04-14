@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:better_player/better_player.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'live_viewModel/fav_model.dart';
 import 'live_viewModel/live_cubit.dart';
+import 'live_viewModel/live_model.dart';
 import 'live_viewModel/live_states.dart';
 
 class LivePlayerScreen extends StatefulWidget {
@@ -23,11 +26,20 @@ class LivePlayerScreen extends StatefulWidget {
 
 class _LivePlayerScreenState extends State<LivePlayerScreen> {
   late BetterPlayerController _betterPlayerController;
+  late LiveStream series;
+  bool isFavorite = false;  // Track the favorite state
 
   @override
   void initState() {
     super.initState();
 
+    series = LiveStream(
+      streamId: widget.streamId,
+      name: widget.name,
+      streamUrl: widget.streamUrl,
+    );
+
+    // Initialize the player
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
       widget.streamUrl,
@@ -48,39 +60,87 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
       ),
       betterPlayerDataSource: dataSource,
     );
+
+    // Load the favorites status after initializing
+    _loadFavoriteStatus();
+  }
+
+  // Load favorite status from SharedPreferences
+  void _loadFavoriteStatus() async {
+    // Ensure the Cubit has the latest list of favorites loaded
+    await LiveCubit.get(context).loadFavoritesFromPrefs();
+
+    // After favorites are loaded, check if the series is in the favorites list
+    bool isFav = LiveCubit.get(context).isSeriesFavorite(series.toMap());
+    setState(() {
+      isFavorite = isFav;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Live Stream"),
-        actions: [
-          BlocBuilder<LiveCubit, LiveStates>(
-            builder: (context, state) {
-              final cubit = LiveCubit.get(context);
-              final isFav = cubit.isFavorite(widget.streamId);
+    LiveCubit cubit = LiveCubit.get(context);
 
-              return IconButton(
-                icon: Icon(
-                  isFav ? Icons.favorite : Icons.favorite_border,
-                  color: isFav ? Colors.red : Colors.white,
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: BlocBuilder<LiveCubit, LiveStates>(
+        builder: (context, state) {
+          return Stack(
+            children: [
+              BetterPlayer(controller: _betterPlayerController),
+
+              // Back button
+              Positioned(
+                top: 40,
+                left: 16,
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: Colors.white24,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.arrow_back, color: Colors.white),
+                  ),
                 ),
-                onPressed: () {
-                  final favItem = FavoriteStream(
-                    streamId: widget.streamId,
-                    name: widget.name,
-                    url: widget.streamUrl,
-                  );
-                  cubit.toggleFavorite(favItem);
-                },
-              );
-            },
-          ),
-        ],
-      ),
-      body: Center(
-        child: BetterPlayer(controller: _betterPlayerController),
+              ),
+
+              // Favorite button
+              Positioned(
+                top: 40,
+                right: 16,
+                child: GestureDetector(
+                  onTap: () async {
+                    await cubit.toggleFavorite(series.toMap());
+
+                    // Update the UI after toggling
+                    setState(() {
+                      isFavorite = !isFavorite;
+                    });
+
+                    // Navigate back with updated favorite state
+                    Navigator.pop(context, {'isFav': isFavorite, 'id': series.streamId});
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: Colors.white24,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite ? Colors.red : Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -91,3 +151,4 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
     super.dispose();
   }
 }
+

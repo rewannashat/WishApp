@@ -242,7 +242,7 @@ class _SeriesViewState extends State<SeriesView> {
                       padding: const EdgeInsets.symmetric(vertical: 20),
                       child: Column(
                         children: [
-                        /*  SpinKitFadingCircle(
+                          /*  SpinKitFadingCircle(
                             color: Colors.white,
                             size: 50.0,
                           ),*/
@@ -258,7 +258,7 @@ class _SeriesViewState extends State<SeriesView> {
 
 
 
-              /*  // Handle empty recent state
+                /*  // Handle empty recent state
                 if (cubit.recentSeriesList.isEmpty) {
                   return Center(
                     child: Padding(
@@ -336,7 +336,7 @@ class _SeriesViewState extends State<SeriesView> {
 
                             // Call getSeriesDetails method from SeriesCubit
                             context.read<SeriesCubit>().getSeriesDetails(seriesId);
-                          //  context.read<SeriesCubit>().debugEpisodes(seriesItem);
+                            //  context.read<SeriesCubit>().debugEpisodes(seriesItem);
 
 
 

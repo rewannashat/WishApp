@@ -7,6 +7,7 @@ class ChangeCategoryState extends LiveStates {}
 //== Fav Icon STATES ==//
 class FavoritesUpdatedState extends LiveStates {}
 class DeleteFavState extends LiveStates {}
+class DropdownToggledState extends LiveStates {}
 
 
 class SearchLiveState extends LiveStates {
@@ -28,6 +29,8 @@ class GetCategoriesErrorState extends LiveStates {
   GetCategoriesErrorState(this.error);
 }
 
+
+class LiveLoadingState extends LiveStates {}
 
 
 class GetStreamsLoadingState extends LiveStates {}

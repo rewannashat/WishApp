@@ -1,8 +1,13 @@
+import 'dart:convert';
 import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wish/presentation/screens/Live/live_viewModel/stream_model.dart';
 import 'fav_model.dart';
+import 'live_model.dart';
 import 'live_states.dart';
 
 class LiveCubit extends Cubit<LiveStates> {
@@ -10,121 +15,188 @@ class LiveCubit extends Cubit<LiveStates> {
 
   static LiveCubit get(context) => BlocProvider.of(context);
 
+
+  final String baseUrl = "http://tgdns4k.com:8080/player_api.php";
+  final String username = "6665e332412";
+  final String password = "12977281747688";
+  final dio = Dio();
+
+
   // Category Logic
-  List<Map<String, dynamic>> categories = [];
+  final List<String> categories = [];
+  Map<String, String> categoryIdToNameMap = {};  // To map category_id to category_name
   String? selectedCategoryId;
   String? selectedCategoryName;
   bool isDropdownOpen = false;
+  String? selectedCategory ;
 
-  // Pagination
-  int currentPage = 1;
-  final int pageSize = 50;
-  bool isLoading = false;
 
-  // Streams
-  List<Map<String, dynamic>> allLive = [];
-  List<Map<String, dynamic>> filteredLive = [];
-
-  void toggleDropdown() {
-    isDropdownOpen = !isDropdownOpen;
-    emit(ChangeCategoryState());
-  }
-
-  /*void changeCategory(Map<String, dynamic> category) {
-    selectedCategoryId = category['category_id'];
-    selectedCategoryName = category['category_name'];
-    getLiveStreams(resetPagination: true);
-    emit(ChangeCategoryState());
-  }
-*/
-  void getLiveCategories() async {
-    emit(GetCategoriesLoadingState());
+/// get drowpdown list category
+  Future<void> getLiveCategories() async {
+    final url =
+        'http://tgdns4k.com:8080/player_api.php?username=$username&password=$password&action=get_live_categories';
 
     try {
-      final dio = Dio();
-      final response = await dio.get(
-        'http://tgdns4k.com:8080/player_api.php',
-        queryParameters: {
-          'username': '6665e332412',
-          'password': '12977281747688',
-          'action': 'get_live_categories',
-        },
-      );
+      final response = await dio.get(url);
 
-      if (response.statusCode == 200 && response.data is List) {
-        categories = List<Map<String, dynamic>>.from(response.data);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
 
-        if (categories.isNotEmpty) {
-          selectedCategoryId = categories.first['category_id'];
-          selectedCategoryName = categories.first['category_name'];
-          getLiveStreams();
+        categories.clear();
+        categoryIdToNameMap.clear();
+        categories.addAll(['Favorite', 'Recent View']); // Keep these as fallback categories
+
+        for (var item in data) {
+          final category = LiveCategory.fromJson(item);
+          categoryIdToNameMap[category.categoryId] = category.categoryName;
+          categories.add(category.categoryName);
         }
 
-        emit(GetCategoriesSuccessState());
+
+
+        // Automatically select the first item from the API response as the default category
+        selectedCategory = categories.isNotEmpty ? categories[2] : ''; // Skipping 'Favorite' and 'Recent View'
+
+        // ✅ Automatically filter series based on the first category
+        changeCategory(selectedCategory!);
+
+        emit(ChangeCategoryState());
       } else {
-        emit(GetCategoriesErrorState('Invalid category response format.'));
+        log('Failed to load categories: ${response.statusCode}');
       }
-    } catch (error) {
-      log('[LiveCategories] Error: $error');
-      emit(GetCategoriesErrorState('Failed to fetch categories: $error'));
+    } catch (e) {
+      log('Error fetching live categories: $e');
     }
   }
 
-  void getLiveStreams({bool resetPagination = false}) async {
-    if (selectedCategoryId == null || isLoading) return;
+  void changeCategory(String newCategory) async {
+    selectedCategory = newCategory;
+    emit(ChangeCategoryState());
 
-    if (resetPagination) {
-      currentPage = 1;
-      allLive.clear();
+    if (newCategory == 'Favorite') {
+      await loadFavoritesFromPrefs(); // Load the favorites from shared preferences
+      filteredLive = favoriteLiveList
+          .map((map) => LiveStream.fromJson(map)) // Map the map to LiveStream objects
+          .toList();
+    } else if (newCategory == 'Recent View') {
+      await loadRecentFromPrefs(); // Load the recently viewed from shared preferences
+      filteredLive = recentStreams
+          .map((map) => LiveStream.fromJson(map)) // Map the map to LiveStream objects
+          .toList();
+    } else {
+      await getAllLiveChannels(newCategory); // Fetch other categories from the API
     }
 
-    isLoading = true;
-    emit(GetStreamsLoadingState());
+    emit(ChangeCategoryState()); // Emit a state to indicate the change is complete
+  }
+
+
+  void toggleDropdown() {
+    emit(DropdownToggledState());
+  }
+
+
+
+  /// get the gridview data
+  List<LiveStream> allLive = [];
+  List<LiveStream> filteredLive = [];
+
+
+  Future<void> getAllLiveChannels(String categoryName) async {
+    final url =
+        'http://tgdns4k.com:8080/player_api.php?username=$username&password=$password&action=get_live_streams';
 
     try {
-      final dio = Dio();
-      final response = await dio.get(
-        'http://tgdns4k.com:8080/player_api.php',
-        queryParameters: {
-          'username': '6665e332412',
-          'password': '12977281747688',
-          'action': 'get_live_streams',
-          'category_id': selectedCategoryId,
-          'page': currentPage,
-          'page_size': pageSize,
-        },
-      );
+      final response = await Dio().get(url);
 
-      if (response.statusCode == 200 && response.data is List) {
-        final List<Map<String, dynamic>> newStreams = List<Map<String, dynamic>>.from(
-          response.data.map((item) => {
-            'name': item['name'] ?? 'No Name',
-            'stream_id': item['stream_id'] ?? 0,
-          }),
-        );
+      if (response.statusCode == 200) {
+        final List data = response.data;
 
-        allLive.addAll(newStreams);
-        filteredLive = List.from(allLive);
-        currentPage++;
+        allLive = data.map<LiveStream>((e) {
+          final enrichedData = {
+            ...e,
+            'categories': [getCategoryNameFromId(e['category_id']?.toString() ?? 'Unknown')],
+          };
+          Map<String, dynamic> validData = Map<String, dynamic>.from(enrichedData);
+          return LiveStream.fromJson(validData);
+        }).toList();
+
+        final selectedId = categoryIdToNameMap.entries
+            .firstWhere((entry) => entry.value == categoryName, orElse: () => MapEntry('', ''))
+            .key;
+
+        filteredLive = allLive.where((live) {
+          return live.categoryId == selectedId;
+        }).toList();
+
 
         emit(GetStreamsSuccessState());
       } else {
-        emit(GetStreamsErrorState('Invalid streams response format.'));
+        log('Unexpected response format: ${response.data}');
+        emit(GetStreamsErrorState('Unexpected response format'));
       }
-    } catch (error) {
-      log('[LiveStreams] Error: $error');
-      emit(GetStreamsErrorState('Failed to fetch streams: $error'));
-    } finally {
-      isLoading = false;
+    } catch (e) {
+      final errorMsg = 'Error fetching live channels: $e';
+      log(errorMsg);
+      emit(GetStreamsErrorState(errorMsg));
     }
   }
+
+  String getCategoryNameFromId(String categoryId) {
+    return categoryIdToNameMap[categoryId] ?? 'Unknown';
+  }
+
+  List<Map<String, dynamic>> recentStreams = [];
+
+
+
+
+
+  void addToRecentStreams(Map<String, dynamic> stream) async {
+    // Assuming you save `stream` in SharedPreferences
+    // Example: Save stream data to SharedPreferences (You can adjust this logic as per your app's needs)
+    final prefs = await SharedPreferences.getInstance();
+    recentStreams.add(stream); // Add to the list
+
+    // Optionally: Limit the recent streams to, e.g., 10
+    if (recentStreams.length > 10) {
+      recentStreams.removeAt(0); // Remove the first (oldest) stream
+    }
+
+    // Save recent streams to SharedPreferences
+    prefs.setStringList('recent_streams', recentStreams.map((stream) => jsonEncode(stream)).toList());
+  }
+  Future<void> loadRecentStreams() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String>? recentStreamStrings = prefs.getStringList('recent_live');
+
+    if (recentStreamStrings != null) {
+      // Convert List<dynamic> to List<Map<String, dynamic>>
+      recentStreams = recentStreamStrings
+          .map((streamString) => Map<String, dynamic>.from(jsonDecode(streamString)))
+          .toList();
+    }
+  }
+
+
+
+
+
+
+
+  // Pagination
+
+  bool isLoading = false;
+
+
+
 
   void searchLive(String query) {
     if (query.isEmpty) {
       filteredLive = List.from(allLive);
     } else {
       filteredLive = allLive
-          .where((stream) => stream['name']
+          .where((stream) => stream.name
           .toString()
           .toLowerCase()
           .contains(query.toLowerCase()))
@@ -141,50 +213,84 @@ class LiveCubit extends Cubit<LiveStates> {
     emit(LiveUpdatedState(List.from(filteredLive)));
   }
 
+  /// fav
+  // == Favorite local logic == //
+  List<Map<String, String>> favoriteLiveList = [];
+  List<Map<String, String>> recentLiveList = [];
 
-  /// Fav LOGIC ///
-  bool showOnlyFavorites = false;
-  int? selectedDropdownId;
-  // Store favorite streams in a list of FavoriteStream objects
-  List<FavoriteStream> favorites = [];
+// Method to check if a series is in the favorite list
+  bool isSeriesFavorite(Map<String, dynamic> series) {
+    return favoriteLiveList.any((item) => item['title'] == series['title']);
+  }
 
-  // Toggle favorite status for a stream
-  void toggleFavorite(FavoriteStream stream) {
-    final index = favorites.indexWhere((fav) => fav.streamId == stream.streamId);
+  Future<void> loadFavoritesFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedList = prefs.getStringList('favorite_live') ?? [];
 
-    if (index != -1) {
-      favorites.removeAt(index);  // Remove if already favorited
+    // Map saved list data to LiveStream objects
+    favoriteLiveList = savedList.map((e) {
+      final Map<String, dynamic> decoded = jsonDecode(e);
+      final Map<String, String> stringMap = decoded.map((key, value) => MapEntry(key, value.toString()));
+      return stringMap;
+    }).toList();
+
+    // Convert favorites to LiveStream objects
+    filteredLive = favoriteLiveList.map((map) {
+      return LiveStream(
+        name: map['name'] ?? 'Untitled', // Assuming the 'title' field
+        streamId: int.tryParse(map['series_id'] ?? '0') ?? 0, // Assuming 'series_id' is numeric
+        thumbnail: map['stream_icon'], // Assuming 'cover' is the thumbnail field
+        streamUrl: map['stream_url'], // Assuming 'stream_url' exists
+        categoryId: map['categoryId'].toString(),
+      );
+    }).toList();
+
+    emit(GetStreamsSuccessState());
+  }
+
+
+
+
+
+  Future<void> loadRecentFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedList = prefs.getStringList('recent_series') ?? [];
+
+    recentLiveList = savedList.map((e) {
+      final Map<String, dynamic> decoded = jsonDecode(e);
+      return decoded.map((key, value) => MapEntry(key, value.toString()));
+    }).toList();
+
+    emit(ChangeCategoryState());
+  }
+
+  Future<void> addToRecent(Map<String, String> series) async {
+    final prefs = await SharedPreferences.getInstance();
+    recentLiveList.removeWhere((item) => item['title'] == series['title']);
+    recentLiveList.insert(0, series); // insert at beginning
+    if (recentLiveList.length > 10) recentLiveList = recentLiveList.sublist(0, 10); // limit to 20
+    final encoded = recentLiveList.map((item) => jsonEncode(item)).toList();
+    await prefs.setStringList('recent_series', encoded);
+  }
+
+  Future<void> toggleFavorite(Map<String, String> series) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Check if the series is already in the favorite list
+    final exists = favoriteLiveList.any((item) => item['title'] == series['title']);
+
+    // Add or remove from the favorite list
+    if (exists) {
+      favoriteLiveList.removeWhere((item) => item['title'] == series['title']);
     } else {
-      favorites.add(stream);  // Add if not in favorites
+      favoriteLiveList.add(series);
     }
 
-    emit(FavoritesUpdatedState());
-  }
+    // Store the updated list in SharedPreferences
+    final encoded = favoriteLiveList.map((item) => jsonEncode(item)).toList();
+    await prefs.setStringList('favorite_live', encoded);
 
-  // Check if a stream is a favorite
-  bool isFavorite(int streamId) {
-    return favorites.any((fav) => fav.streamId == streamId);
-  }
-
-  // Get list of favorite streams filtered from allLive
-  List<Map<String, dynamic>> get favoriteStreams {
-    return allLive?.where((stream) => isFavorite(stream['stream_id'])).toList() ?? [];
-  }
-
-  // Show only favorite streams in the UI
-  void showFavoritesOnly() {
-    showOnlyFavorites = true;
-    selectedCategoryId = '-1';  // Set the selected category to 'Favorites'
+    // Emit a state change to notify the UI
     emit(ChangeCategoryState());
   }
-
-  // Change the category selection in the dropdown
-  void changeCategory(Map<String, dynamic> category) {
-    // Update selectedCategoryId as String
-    selectedCategoryId = category['category_id'].toString();
-
-    showOnlyFavorites = false;  // Reset to show all streams, not just favorites
-    emit(ChangeCategoryState());
-  }
-
 }

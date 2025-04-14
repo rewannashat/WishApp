@@ -30,38 +30,12 @@ class _LiveViewState extends State<LiveView> {
   final LayerLink _layerLink = LayerLink();
   final FocusNode _focusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
-  final ScrollController _scrollController = ScrollController(); // ScrollController for pagination
 
 
-  @override
-  void initState() {
-    super.initState();
-    final cubit = LiveCubit.get(context);
-
-    // Automatically set the default category if categories are available
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (cubit.categories.isNotEmpty) {
-        cubit.changeCategory(cubit.categories.first); // Automatically select the first category
-      }
-    });
-
-    // Listen to the scroll events to trigger pagination
-    _scrollController.addListener(_scrollListener);
-  }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_scrollListener);
     super.dispose();
-  }
-
-  // Pagination listener
-  void _scrollListener() {
-    final cubit = LiveCubit.get(context);
-    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
-      // If the scroll reaches the bottom, load more streams
-      cubit.getLiveStreams();
-    }
   }
 
   @override
@@ -157,8 +131,7 @@ class _LiveViewState extends State<LiveView> {
       children: [
         SizedBox(width: 45.w),
         Expanded(
-          child: cubit.categories.isEmpty
-              ? Container(
+          child: Container(
             height: 40.h,
             width: 280.w,
             margin: EdgeInsets.symmetric(horizontal: 15),
@@ -168,7 +141,7 @@ class _LiveViewState extends State<LiveView> {
               borderRadius: BorderRadius.circular(5.r),
             ),
             child: DropdownButtonHideUnderline(
-              child: DropdownButton2<Map<String, dynamic>>(
+              child: DropdownButton2<String>(
                 isExpanded: true,
                 dropdownStyleData: DropdownStyleData(
                   decoration: BoxDecoration(
@@ -180,74 +153,37 @@ class _LiveViewState extends State<LiveView> {
                   icon: Icon(Icons.arrow_drop_down, color: Colors.white, size: 24.sp),
                 ),
                 barrierColor: Colors.black.withOpacity(0.5),
-                items: [
-                  DropdownMenuItem<Map<String, dynamic>>(
+                items: cubit.categories!.isEmpty
+                    ? [
+                  DropdownMenuItem<String>(
                     value: null,
-                    child: Text(
-                      'No Data Available',
-                      style: TextStyle(color: Colors.white),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ],
-                value: null,
-                onChanged: null,
-              ),
-            ),
-          )
-              : Container(
-            height: 40.h,
-            width: 280.w,
-            margin: EdgeInsets.symmetric(horizontal: 15),
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(5.r),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton2<Map<String, dynamic>>(
-                isExpanded: true,
-                dropdownStyleData: DropdownStyleData(
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                iconStyleData: IconStyleData(
-                  icon: Icon(Icons.arrow_drop_down, color: Colors.white, size: 24.sp),
-                ),
-                barrierColor: Colors.black.withOpacity(0.5),
-                items: [
-                  DropdownMenuItem<Map<String, dynamic>>(
-                    value: {"category_id": -1, "category_name": "Favorites"},
-                    child: Text("Favorites", style: TextStyle(color: Colors.white)),
-                  ),
-                  ...cubit.categories.map((category) {
-                    return DropdownMenuItem<Map<String, dynamic>>(
-                      value: category,
+                    child: Center(
                       child: Text(
-                        category['category_name'],
+                        'No Data Available',
                         style: TextStyle(color: Colors.white),
                       ),
-                    );
-                  }).toList(),
-                ],
-                value: cubit.showOnlyFavorites
-                    ? {"category_id": -1, "category_name": "Favorites"}
-                    : cubit.categories.firstWhere(
-                      (c) => c['category_id'] == cubit.selectedCategoryId,
-                  orElse: () => cubit.categories.first,
-                ),
-                onChanged: (Map<String, dynamic>? value) {
+                    ),
+                  ),
+                ]
+                    : cubit.categories!
+                    .map(
+                      (String item) => DropdownMenuItem<String>(
+                    value: item,
+                    child: Text(
+                      item,
+                      style: TextStyle(fontSize: 14.sp, color: Colors.white),
+                    ),
+                  ),
+                )
+                    .toList(),
+                value: cubit.categories!.isEmpty ? null : cubit.selectedCategory,
+                onChanged: (String? value) {
                   if (value != null) {
-                    if (value['category_id'] == -1) {
-                      cubit.showFavoritesOnly();
-                    } else {
-                      cubit.changeCategory(value);
-                    }
+                    cubit.changeCategory(value);
                   }
                   cubit.toggleDropdown();
                 },
+
               ),
             ),
           ),
@@ -256,14 +192,10 @@ class _LiveViewState extends State<LiveView> {
     );
   }
 
-  Widget _buildStreamGrid(LiveCubit cubit, LiveStates state) {
-    final lives = cubit.showOnlyFavorites
-        ? cubit.favoriteStreams
-        : (cubit.filteredLive.isNotEmpty || _searchController.text.isNotEmpty
-        ? cubit.filteredLive
-        : cubit.allLive);
 
-    if (lives!.isEmpty) {
+  Widget _buildStreamGrid(LiveCubit cubit, LiveStates state) {
+
+    if (state is GetStreamsLoadingState || cubit.filteredLive.isEmpty) {
       return Center(
         child: state is GetStreamsLoadingState
             ? SpinKitFadingCircle(
@@ -276,7 +208,6 @@ class _LiveViewState extends State<LiveView> {
 
     return Expanded(
       child: GridView.builder(
-        controller: _scrollController, // Attach ScrollController for pagination
         padding: EdgeInsets.symmetric(horizontal: 10),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
@@ -284,71 +215,93 @@ class _LiveViewState extends State<LiveView> {
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
         ),
-        itemCount: lives.length,
-          itemBuilder: (context, index) {
-            final stream = lives[index];
-            final streamId = stream['stream_id'];
-            final isFav = cubit.isFavorite(streamId); // Check if this stream is a favorite
+        itemCount: cubit.filteredLive.length,
+        itemBuilder: (context, index) {
+          final stream = cubit.filteredLive[index];
+          final isFavorite = cubit.favoriteLiveList.any(
+                (item) => item['title'] == stream.name,
+          );
+          final isRecent = cubit.recentLiveList.any(
+                (item) => item['title'] == stream.name,
+          );
 
-            return GestureDetector(
-              onTap: () {
-                final streamUrl =
-                    'http://tgdns4k.com:8080/live/6665e332412/12977281747688/$streamId.m3u8';
-                NormalNav(
-                  ctx: context,
-                  screen: LivePlayerScreen(
-                    streamId: streamId,
-                    name: stream['name'] ?? '',
-                    streamUrl: streamUrl,
-                  ),
-                );
-              },
-              child: Column(
-                children: [
-                  Stack(
-                    children: [
-                      Container(
-                        height: 130.h,
-                        width: 100.w,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(AppSize.s15.r),
-                          image: DecorationImage(
-                            image: AssetImage('assets/images/bein.png'),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      if (isFav)
-                        Positioned(
-                          bottom: 5,
-                          right: 5,
-                          child: Icon(
-                            Icons.favorite,
-                            color: Colors.red,
-                            size: 25.sp,
-                          ),
-                        ),
-                    ],
-                  ),
-                  SizedBox(height: 10.h),
-                  Flexible(
-                    child: Text(
-                      stream['name'] ?? '',
-                      textAlign: TextAlign.center,
-                      style: getRegularTitleStyle(
-                        color: ColorsManager.whiteColor,
-                        fontSize: 12.sp,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      softWrap: true,
+          return Column(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  final streamUrl =
+                      'http://tgdns4k.com:8080/live/6665e332412/12977281747688/${stream.streamId}.m3u8';
+                  NormalNav(
+                    ctx: context,
+                    screen: LivePlayerScreen(
+                      streamId: stream.streamId,
+                      name: stream.name,
+                      streamUrl: streamUrl,
                     ),
-                  ),
-                ],
+                  );
+                },
+                child: Stack(
+                  children: [
+                    Container(
+                      height: 130.h,
+                      width: 100.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(AppSize.s15.r),
+                      ),
+                      child: stream.thumbnail != null && stream.thumbnail!.startsWith('http')
+                          ? Image.network(
+                        stream.thumbnail!,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(child: CircularProgressIndicator());
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset('assets/images/error.png');
+                        },
+                      )
+                          : Image.asset('assets/images/bein.png', fit: BoxFit.cover),
+                    ),
+                    if (isFavorite)
+                      Positioned(
+                        bottom: 10,
+                        right: 5,
+                        child: Icon(
+                          Icons.favorite,
+                          color: Colors.red,
+                          size: 28,
+                        ),
+                      ),
+                    if (isRecent)
+                      Positioned(
+                        bottom: 10,
+                        left: 5,
+                        child: Icon(
+                          Icons.history,
+                          color: Colors.green,
+                          size: 28,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            );
-          }
+              SizedBox(height: 10.h),
+              Flexible(
+                child: Text(
+                  stream.name,
+                  textAlign: TextAlign.center,
+                  style: getRegularTitleStyle(
+                    color: ColorsManager.whiteColor,
+                    fontSize: 12.sp,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
