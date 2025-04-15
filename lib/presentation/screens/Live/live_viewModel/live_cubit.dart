@@ -24,7 +24,7 @@ class LiveCubit extends Cubit<LiveStates> {
 
     /// active playlist
   Future<String> _getBaseUrl() async {
-    final baseUrl = await SharedPreferencesHelper.getData(key: 'activePlaylistUrl');
+    final baseUrl = await SharedPreferencesHelper.getData(key: 'playlist_url');
     return baseUrl ?? 'https://default.api.com'; // fallback URL
   }
 
@@ -43,15 +43,16 @@ class LiveCubit extends Cubit<LiveStates> {
   Future<void> getLiveCategories() async {
 
     // active playlist
-  // final url = await SharedPreferencesHelper.getData(key: 'activePlaylistUrl');
-  // final response = await dio.get('$url/player_api.php?username=xxx&password=yyy&action=...');
-
+  /* final url = await SharedPreferencesHelper.getData(key: 'playlist_url');
+   final response = await dio.get('$url');
+*/
 
   final url =
         'http://tgdns4k.com:8080/player_api.php?username=$username&password=$password&action=get_live_categories';
 
     try {
-      final response = await dio.get(url);
+     final response = await dio.get(url);
+
 
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data;

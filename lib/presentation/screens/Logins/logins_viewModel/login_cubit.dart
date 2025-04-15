@@ -178,7 +178,7 @@ class LoginCubit extends Cubit<LoginState> {
         'https://wish-omega-blush.vercel.app/playList/active/$playlistId',
       );
 
-      // log('Response data: ${response.data}');  // Log the response for debugging
+       log('Response data: ${response.data}');  // Log the response for debugging
 
       if (response.statusCode == 200 && response.data != null && response.data['allPlaylists'] != null) {
         final playlists = response.data['allPlaylists'];
@@ -199,6 +199,7 @@ class LoginCubit extends Cubit<LoginState> {
 
           await SharedPreferencesHelper.saveData(key: 'playlist_name', value: activePlaylist.name);
           await SharedPreferencesHelper.saveData(key: 'playlist_url', value: activePlaylist.url);
+        //  await SharedPreferencesHelper.saveData(key: 'activePlaylistUrl', value: activePlaylist.url);
         } else {
           emit(ActivePlayListErrorState('Error: Playlists data is not in the correct format.'));
         }
