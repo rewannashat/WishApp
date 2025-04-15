@@ -25,7 +25,10 @@ class _PlaylistsViewState extends State<PlaylistsView> {
   }
 
   void _fetchData() {
-    BlocProvider.of<LoginCubit>(context).fetchPlaylists(SharedPreferencesHelper.getData(key: 'macAddress'));
+    final macAddress = SharedPreferencesHelper.getData(key: 'macAddress');
+    if (macAddress != null) {
+      BlocProvider.of<LoginCubit>(context).fetchPlaylists(macAddress);
+    }
   }
 
   @override
@@ -58,41 +61,69 @@ class _PlaylistsViewState extends State<PlaylistsView> {
           child: Column(
             children: [
               SizedBox(height: 20.h),
-              BlocBuilder<LoginCubit, LoginState>(builder: (context, state) {
-                if (state is AddPlayListLoadingState || state is ActivePlayListLoadingState || state is GetPlayListLoadingState) {
-                  return const Center(
-                    child: SpinKitFadingCircle(
-                      color: Colors.white,
-                      size: 50.0,
-                    ),
-                  );
-                } else if (state is AddPlayListSucessState ||
-                    state is GetPlayListSucessState ||
-                    state is ActivePlayListSucessState) {
-                  final playlists = state is AddPlayListSucessState
-                      ? state.playlists
-                      : state is GetPlayListSucessState
-                      ? state.playlists
-                      : (state as ActivePlayListSucessState).playlists;
-                  return _buildPlaylistGridView(playlists, context);
-                } else if (state is AddPlayListErrorState ||
-                    state is GetPlayListErrorState ||
-                    state is ActivePlayListErrorState) {
-                  return Center(
-                    child: Text(
-                      'Error: ${state is AddPlayListErrorState
-                          ? state.error
-                          : (state is GetPlayListErrorState
-                          ? state.error
-                          : (state as ActivePlayListErrorState).error)}',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  );
-                }
-                return const SizedBox();
-              }),
+              BlocConsumer<LoginCubit, LoginState>(
+                listener: (context, state) {
+                  if (state is GetPlayListErrorState) {
+                    // Handle error state (e.g., show a dialog or Snackbar)
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.error)),
+                    );
+                  }
+                },
+                builder: (context, state) {
+                  if (state is GetPlayListLoadingState ||
+                      state is AddPlayListLoadingState ||
+                      state is ActivePlayListLoadingState) {
+                    return const Center(
+                      child: SpinKitFadingCircle(
+                        color: Colors.white,
+                        size: 50.0,
+                      ),
+                    );
+                  } else if (state is GetPlayListSucessState ||
+                      state is AddPlayListSucessState ||
+                      state is ActivePlayListSucessState) {
+                    final playlists = state is GetPlayListSucessState
+                        ? state.playlists
+                        : state is AddPlayListSucessState
+                        ? state.playlists
+                        : (state as ActivePlayListSucessState).playlists;
+
+                    // Check if the playlists are empty
+                    if (playlists.isEmpty) {
+                      return _buildEmptyState();
+                    }
+
+                    return _buildPlaylistGridView(playlists, context);
+                  } else {
+                    return _buildEmptyState();
+                  }
+                },
+              ),
+              // Add a "Reload" button at the bottom to refresh the data
+              SizedBox(height: 20.h),
+              ElevatedButton(
+                onPressed: _fetchData,
+                child: Text('Reload Playlists', style: TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.r)),
+                ),
+              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Text(
+        'No playlists available',
+        style: getRegularTitleStyle(
+          color: ColorsManager.whiteColor,
+          fontSize: 16.sp,
         ),
       ),
     );
@@ -107,7 +138,7 @@ class _PlaylistsViewState extends State<PlaylistsView> {
         mainAxisSpacing: 12.h,
         childAspectRatio: 0.8,
       ),
-      itemCount: playlists.length + 1,
+      itemCount: playlists.length + 1, // +1 for the "Add Playlist" button
       itemBuilder: (context, index) {
         if (index == playlists.length) {
           return GestureDetector(
@@ -256,8 +287,7 @@ class _PlaylistsViewState extends State<PlaylistsView> {
           actions: [
             TextButton(
               onPressed: () {
-                // Close dialog without saving
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Close dialog without saving
               },
               child: Text('Cancel'),
             ),
@@ -270,6 +300,7 @@ class _PlaylistsViewState extends State<PlaylistsView> {
 
                   // Call addPlaylist API request
                   BlocProvider.of<LoginCubit>(context).addPlaylist(name: playlistName, url: playlistUrl);
+                  Navigator.of(context).pop(); // Close dialog without saving
                 }
               },
               child: Text('Add'),

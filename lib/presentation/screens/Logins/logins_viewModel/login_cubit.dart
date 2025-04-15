@@ -20,13 +20,14 @@ class LoginCubit extends Cubit<LoginState> {
 
   static LoginCubit get(context) => BlocProvider.of<LoginCubit>(context);
 
-  BuildContext? context ;
+  BuildContext? context;
 
   String macAddress = '';
   String deviceType = Platform.isAndroid ? 'android' : 'ios';
   String deviceKey = '';
   bool isTrialActive = true;
 
+  bool _isDataLoaded = false;  // لضمان تحميل البيانات مرة واحدة فقط
 
   Future<bool> login() async {
     emit(FetchDataLoadingState());
@@ -73,10 +74,13 @@ class LoginCubit extends Cubit<LoginState> {
         }
         await SharedPreferencesHelper.saveData(key: 'macAddress', value:macAddress);
 
-
         log('Received Device Key: $deviceKey $isTrialActive');
+
         if (isTrialActive) {
-          emit(FetchDataSucessState());
+          if (!_isDataLoaded) {  // تأكد من أنه يتم تحميل البيانات مرة واحدة فقط
+            _isDataLoaded = true;
+            emit(FetchDataSucessState());  // بيانات النجاح
+          }
           return true; // Login success
         } else {
           emit(FetchDataErrorState("Trial period expired"));
@@ -133,7 +137,7 @@ class LoginCubit extends Cubit<LoginState> {
 
   Future<void> fetchPlaylists(String macAddress) async {
     try {
-      emit(AddPlayListLoadingState());  // Show loading state
+      emit(AddPlayListLoadingState()); // Show loading state
 
       final response = await Dio().get(
         'https://wish-omega-blush.vercel.app/playList/getToApp?macAddress=$macAddress',
@@ -151,17 +155,20 @@ class LoginCubit extends Cubit<LoginState> {
           return Playlist.fromJson(playlist);
         }).toList();
 
-        emit(GetPlayListSucessState(playlists: playlists));  // Emit success with playlists
+        // Emit success state with playlists if data is valid
+        emit(GetPlayListSucessState(playlists: playlists));
       } else {
-        emit(GetPlayListErrorState(error: 'Failed to fetch playlists'));
+        emit(GetPlayListErrorState(error: 'Failed to fetch playlists: ${data['message']}'));
       }
     } catch (e) {
+      // Catch and display any errors that happen during the request
       emit(GetPlayListErrorState(error: e.toString()));
     }
   }
 
 
   /// put data playlist  ///
+
 
   Future<void> activatePlaylist(String playlistId) async {
     try {
@@ -171,7 +178,7 @@ class LoginCubit extends Cubit<LoginState> {
         'https://wish-omega-blush.vercel.app/playList/active/$playlistId',
       );
 
-     // log('Response data: ${response.data}');  // Log the response for debugging
+      // log('Response data: ${response.data}');  // Log the response for debugging
 
       if (response.statusCode == 200 && response.data != null && response.data['allPlaylists'] != null) {
         final playlists = response.data['allPlaylists'];
@@ -202,6 +209,10 @@ class LoginCubit extends Cubit<LoginState> {
       emit(ActivePlayListErrorState('Error: $error'));
     }
   }
+
+
+
+
 
 
 

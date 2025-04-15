@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wish/presentation/screens/Live/live_viewModel/stream_model.dart';
+import '../../../../domian/local/sharedPref.dart';
 import 'fav_model.dart';
 import 'live_model.dart';
 import 'live_states.dart';
@@ -21,6 +22,13 @@ class LiveCubit extends Cubit<LiveStates> {
   final String password = "12977281747688";
   final dio = Dio();
 
+    /// active playlist
+  Future<String> _getBaseUrl() async {
+    final baseUrl = await SharedPreferencesHelper.getData(key: 'activePlaylistUrl');
+    return baseUrl ?? 'https://default.api.com'; // fallback URL
+  }
+
+
 
   // Category Logic
   final List<String> categories = [];
@@ -33,7 +41,13 @@ class LiveCubit extends Cubit<LiveStates> {
 
 /// get drowpdown list category
   Future<void> getLiveCategories() async {
-    final url =
+
+    // active playlist
+  // final url = await SharedPreferencesHelper.getData(key: 'activePlaylistUrl');
+  // final response = await dio.get('$url/player_api.php?username=xxx&password=yyy&action=...');
+
+
+  final url =
         'http://tgdns4k.com:8080/player_api.php?username=$username&password=$password&action=get_live_categories';
 
     try {
