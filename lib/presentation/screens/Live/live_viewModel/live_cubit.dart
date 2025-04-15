@@ -24,7 +24,7 @@ class LiveCubit extends Cubit<LiveStates> {
 
   // Category Logic
   final List<String> categories = [];
-  Map<String, String> categoryIdToNameMap = {};  // To map category_id to category_name
+  Map<String, String> categoryIdToNameMap = {};
   String? selectedCategoryId;
   String? selectedCategoryName;
   bool isDropdownOpen = false;
@@ -107,7 +107,7 @@ class LiveCubit extends Cubit<LiveStates> {
       if (response.statusCode == 200) {
         final List data = response.data;
 
-        print(response.data);  // Check if stream_icon is present
+      //  print(response.data);  // Check if stream_icon is present
 
 
         allLive = data.map<LiveStream>((e) {
@@ -122,6 +122,8 @@ class LiveCubit extends Cubit<LiveStates> {
         final selectedId = categoryIdToNameMap.entries
             .firstWhere((entry) => entry.value == categoryName, orElse: () => MapEntry('', ''))
             .key;
+
+
 
         filteredLive = allLive.where((live) {
           return live.categoryId == selectedId;
@@ -143,15 +145,6 @@ class LiveCubit extends Cubit<LiveStates> {
   String getCategoryNameFromId(String categoryId) {
     return categoryIdToNameMap[categoryId] ?? 'Unknown';
   }
-
-  List<Map<String, dynamic>> recentStreams = [];
-
-
-
-
-
-
-
 
 
   /// fav

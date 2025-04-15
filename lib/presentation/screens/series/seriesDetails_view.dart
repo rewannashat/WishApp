@@ -137,6 +137,7 @@ class _SeriesDetailsViewState extends State<SeriesDetailsView> {
                                             cubit.changeSeason(newValue);  // Update the season in cubit
                                           }
                                         },
+
                                       ),
                                     ),
                                   ),
@@ -150,10 +151,16 @@ class _SeriesDetailsViewState extends State<SeriesDetailsView> {
                                       // Toggle favorite state using Cubit
                                       await cubit.toggleFavorite(widget.series.toMap());
 
-                                      // Navigate back with updated favorite state
-                                      Navigator.pop(context, {'isFav': !isFavorite, 'id': widget.series.seriesId});
+                                      // Manually update the favorite state and UI
+                                      setState(() {
+                                        isFavorite = !isFavorite;
+                                      });
+
+                                      // Optionally, update the UI of the current list or favorite page
+                                      // If you need to update other parts of the UI that depend on favorites
+                                      // You can emit another state or call a method to refresh the data.
                                     },
-                                  ),
+                                  )
 
 
                                 ],
@@ -258,6 +265,7 @@ class _SeriesDetailsViewState extends State<SeriesDetailsView> {
                             } else if (state is SeriesErrorState) {
                               return Center(child: Text(state.error));
                             } else if (state is SeriesDetailsLoadedState) {
+
                               final series = state.series;  // Get the series details here
                               return Stack(
                                 children: [
@@ -298,7 +306,9 @@ class _SeriesDetailsViewState extends State<SeriesDetailsView> {
                                             MaterialPageRoute(
                                               builder: (context) => SeriesPlayerScreen(
                                                 streamId: episode.id.toString(),
-                                                extension:episode.containerExtension), // تأكد من أن الحلقة تحتوي على رابط الفيديو
+                                                extension: episode.containerExtension,
+                                                series: series, // Pass the whole Series object
+                                              ),
                                             ),
                                           );
                                         },

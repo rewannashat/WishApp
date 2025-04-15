@@ -78,6 +78,7 @@ class SeriesCubit extends Cubit<SeriesState> {
 
 
   Future<void> fetchSeriesForCategory(String categoryName) async {
+    await Future.delayed(Duration(seconds: 2));
     emit(SeriesLoadingState());
 
     try {
@@ -125,22 +126,21 @@ class SeriesCubit extends Cubit<SeriesState> {
 
   void changeCategory(String newCategory) async {
     selectedCategory = newCategory;
-    emit(ChangeCategoryState());
+    emit(SeriesLoadingState());  // Emit loading state
 
     if (newCategory == 'Favorite') {
       await loadFavoritesFromPrefs();
-      filteredSeries =
-          favoriteSeriesList.map((map) => Series.mapToSeries(map)).toList();
+      filteredSeries = favoriteSeriesList.map((map) => Series.mapToSeries(map)).toList();
     } else if (newCategory == 'Recent View') {
       await loadRecentFromPrefs();
-      filteredSeries =
-          favoriteSeriesList.map((map) => Series.mapToSeries(map)).toList();
+      filteredSeries = recentSeriesList.map((map) => Series.mapToSeries(map)).toList();
     } else {
       await fetchSeriesForCategory(newCategory);
     }
 
-    emit(ChangeCategoryState());
+    emit(ChangeCategoryState());  // Emit state after data is loaded
   }
+
 
   // == Favorite local logic == //
   List<Map<String, String>> favoriteSeriesList = [];
@@ -180,48 +180,6 @@ class SeriesCubit extends Cubit<SeriesState> {
 
     emit(SeriesSuccessState());
   }
-
-
-
-
-
-  /*Future<void> saveToFavorites(Series series) async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedList = prefs.getStringList('favorite_series') ?? [];
-
-    // Avoid duplicates
-    if (favoriteSeriesList.any((item) => item['series_id'] == series.seriesId)) return;
-
-    favoriteSeriesList.add(series.toMap());
-    final updatedList = favoriteSeriesList.map((e) => jsonEncode(e)).toList();
-
-    await prefs.setStringList('favorite_series', updatedList);
-    emit(ChangeCategoryState());
-  }*/
-
-
-  Future<void> loadRecentFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedList = prefs.getStringList('recent_series') ?? [];
-
-    recentSeriesList = savedList.map((e) {
-      final Map<String, dynamic> decoded = jsonDecode(e);
-      return decoded.map((key, value) => MapEntry(key, value.toString()));
-    }).toList();
-
-    emit(ChangeCategoryState());
-  }
-
-  Future<void> addToRecent(Map<String, String> series) async {
-    final prefs = await SharedPreferences.getInstance();
-    recentSeriesList.removeWhere((item) => item['title'] == series['title']);
-    recentSeriesList.insert(0, series); // insert at beginning
-    if (recentSeriesList.length > 10)
-      recentSeriesList = recentSeriesList.sublist(0, 10); // limit to 20
-    final encoded = recentSeriesList.map((item) => jsonEncode(item)).toList();
-    await prefs.setStringList('recent_series', encoded);
-  }
-
   Future<void> toggleFavorite(Map<String, String> series) async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -231,9 +189,11 @@ class SeriesCubit extends Cubit<SeriesState> {
 
     // Add or remove from the favorite list
     if (exists) {
+      // Remove the series from the favorite list
       favoriteSeriesList.removeWhere((item) =>
       item['title'] == series['title']);
     } else {
+      // Add the series to the favorite list
       favoriteSeriesList.add(series);
     }
 
@@ -241,9 +201,78 @@ class SeriesCubit extends Cubit<SeriesState> {
     final encoded = favoriteSeriesList.map((item) => jsonEncode(item)).toList();
     await prefs.setStringList('favorite_series', encoded);
 
-    // Emit a state change to notify the UI
+    // Emit a state change to notify the UI that the data has been updated
     emit(ChangeCategoryState());
   }
+
+
+
+/// recent viwed
+
+  Future<void> loadRecentFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedList = prefs.getStringList('recent_series') ?? [];
+
+    // Map saved list data to LiveStream objects
+    recentSeriesList = savedList.map((e) {
+      final Map<String, dynamic> decoded = jsonDecode(e);
+      final Map<String, String> stringMap = decoded.map((key, value) {
+        return MapEntry(key, value?.toString() ?? '');  // Ensure no null values
+      });
+      return stringMap;
+    }).toList();
+
+    // Debug print to see if the data is loaded correctly
+    print("Loaded Recent: $recentSeriesList");
+
+    // Convert favorites to LiveStream objects with default values for missing data
+    filteredSeries = recentSeriesList.map((map) {
+      return Series(
+        title: map['title'] ?? '',
+        imageUrl: map['cover'] ?? '',
+        description: map['description'] ?? '',
+        cast: [],
+        episodes: [],
+        seriesId: map['series_id'] ?? '',
+        categories: ['Favorite'],
+        genre: [],
+        rating: '',
+        seasons: [],
+      );
+    }).toList();
+
+    emit(ChangeCategoryState()); // Trigger the state change to update the UI
+  }
+
+  // Add a new series to recent views
+  Future<void> addToRecent(Map<String, String> series) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Check if the series is already in the recent list
+    final exists = recentSeriesList.any((item) => item['title'] == series['title']);
+
+    if (exists) {
+      // Remove the series from its current position
+      recentSeriesList.removeWhere((item) => item['title'] == series['title']);
+    }
+
+    // Add the series to the top of the recent list
+    recentSeriesList.insert(0, series);
+
+    // Limit to most recent 10 items
+    if (recentSeriesList.length > 10) {
+      recentSeriesList = recentSeriesList.sublist(0, 10);
+    }
+
+    // Store the updated list in SharedPreferences
+    final encoded = recentSeriesList.map((item) => jsonEncode(item)).toList();
+    await prefs.setStringList('recent_series', encoded);
+
+    // Optional: emit state update if you want to refresh the UI
+    emit(ChangeCategoryState());
+  }
+
+
 
   /// Method to fetch series details by series_id
   Series? currentSeriesDetails;
@@ -422,5 +451,6 @@ class SeriesCubit extends Cubit<SeriesState> {
     chewieController?.dispose();
     chewieController = null;
   }
+/// handle error api logic
 
 }

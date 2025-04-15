@@ -67,13 +67,47 @@ class MovieDetailModel {
       streamId: movieData['stream_id']?.toString() ?? '',
       name: movieData['name'] ?? '',
       year: info['year']?.toString() ?? '',
-
-      // New fields from movie_data
       added: movieData['added']?.toString() ?? '',
       categoryId: movieData['category_id']?.toString() ?? '',
       containerExtension: movieData['container_extension'] ?? '',
       customSid: movieData['custom_sid']?.toString(),
       directSource: movieData['direct_source'] ?? '',
     );
+  }
+
+  // Used to map LiveStream to MovieDetailModel
+  factory MovieDetailModel.mapToMovie(Map<String, String> map) {
+    return MovieDetailModel(
+      movieImage: map['movie_image'] ?? '',
+      backdropPath: [],
+      tmdbId: '',
+      youtubeTrailer: '',
+      genre: '',
+      plot: '',
+      cast: '',
+      rating: '',
+      director: '',
+      releaseDate: '',
+      duration: '',
+      durationSecs: 0,
+      streamId: map['stream_id'] ?? '',
+      name: map['title'] ?? '',
+      year: '',
+      added: '',
+      categoryId: map['category_id'] ?? '',
+      containerExtension: '',
+      customSid: null,
+      directSource: '',
+    );
+  }
+
+  Map<String, String> toMap() {
+    return {
+      'title': name,
+      'stream_id': streamId,
+      'cover': movieImage,
+      'description': plot,
+      'category_id':categoryId
+    };
   }
 }

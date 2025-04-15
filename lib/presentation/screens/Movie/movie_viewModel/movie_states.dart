@@ -7,17 +7,32 @@ abstract class MovieState {}
 
 class MovieInitial extends MovieState {}
 class ChangeCategoryState extends MovieState {}
-
+/// drowpdown
 class CategoryLoadedState extends MovieState {}
 class ToggleDropdownState extends MovieState{}
-class CategoryErrorState extends MovieState{}
+class CategoryErrorState extends MovieState{
+  final String error;
+  CategoryErrorState(this.error);
+}
+
+class GetStreamsSuccessState extends MovieState{}
+
+
 
 
 class MovieLoaded extends MovieState {}
 class MovieError extends MovieState {}
 
-
+/// gridview data
 class MovieLoadingState extends MovieState {}
+class MoviesSuccessState extends MovieState {}
+class MovieErrorState extends MovieState {
+  final String error;
+  MovieErrorState(this.error);
+}
+
+
+
 class MovieSucessState extends MovieState {
   final MovieDetailModel movieDetail;
   final List<CastMemberModel> castMembers;
@@ -28,10 +43,27 @@ class MovieSucessState extends MovieState {
 class CastLoadingState extends MovieState {}
 class CastLoadedState extends MovieState {}
 
-class MovieErrorState extends MovieState {
+
+
+
+class SeriesErrorState extends MovieState {
   final String error;
-  MovieErrorState(this.error);
+
+  SeriesErrorState(this.error);
 }
+
+class SeriesLoadedState extends MovieState {
+  final List<Map<String, String>> seriesList;
+
+  SeriesLoadedState(this.seriesList);
+}
+
+
+class GetStreamsErrorState extends MovieState {
+  final String error;
+  GetStreamsErrorState(this.error);
+}
+
 
 
 
@@ -46,7 +78,7 @@ class FavoriteLoadedState extends MovieState {
 }
 
 class SearchMoviesState extends MovieState {
-  final List<Map<String, String>> filteredMovies;
+  final List filteredMovies;
   SearchMoviesState(this.filteredMovies);
 }
 

@@ -242,10 +242,10 @@ class _SeriesViewState extends State<SeriesView> {
                       padding: const EdgeInsets.symmetric(vertical: 20),
                       child: Column(
                         children: [
-                          /*  SpinKitFadingCircle(
+                            SpinKitFadingCircle(
                             color: Colors.white,
                             size: 50.0,
-                          ),*/
+                          ),
                           Text(
                             'No Series Found!',
                             style: TextStyle(color: Colors.white, fontSize: 16.sp),
@@ -255,55 +255,14 @@ class _SeriesViewState extends State<SeriesView> {
                     ),
                   );
                 }
-
-
-
-                /*  // Handle empty recent state
-                if (cubit.recentSeriesList.isEmpty) {
+                if (state is SeriesLoadingState) {
                   return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.history_edu,
-                            color: Colors.white,
-                            size: 50.0,
-                          ),
-                          Text(
-                            'No Recent Views!',
-                            style: TextStyle(color: Colors.white, fontSize: 16.sp),
-                          ),
-                        ],
-                      ),
+                    child: SpinKitFadingCircle(
+                      color: Colors.white,
+                      size: 50.0,
                     ),
                   );
                 }
-
-                // Handle empty favorites state
-                if (cubit.favoriteSeriesList.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.favorite_border,
-                            color: Colors.white,
-                            size: 50.0,
-                          ),
-                          Text(
-                            'No Favorites Yet!',
-                            style: TextStyle(color: Colors.white, fontSize: 16.sp),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }*/
-
-
-
                 // Display the GridView with series
                 return GridView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 10),

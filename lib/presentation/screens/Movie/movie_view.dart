@@ -64,7 +64,7 @@ class _MovieViewState extends State<MovieView>  with SingleTickerProviderStateMi
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final cubit = MovieCubit.get(context);
+    MovieCubit cubit = MovieCubit.get(context);
 
     return BlocBuilder<MovieCubit, MovieState>(
       builder: (context, state) {
@@ -111,7 +111,7 @@ class _MovieViewState extends State<MovieView>  with SingleTickerProviderStateMi
                               onChanged: (value) {
                                 cubit.searchMovies(value);
                                 if (value.isNotEmpty) {
-                                  _showOverlay(context, cubit);
+                                //  _showOverlay(context, cubit);
                                 } else {
                                   _removeOverlay();
                                 }
@@ -135,7 +135,7 @@ class _MovieViewState extends State<MovieView>  with SingleTickerProviderStateMi
                     children: [
                       SizedBox(width: 45.w),
                       Expanded(
-                        child: cubit.categories.isEmpty
+                        child: cubit.movieCategories.isEmpty
                             ? Container(
                           height: 40.h,
                           width: 280.w,
@@ -175,8 +175,8 @@ class _MovieViewState extends State<MovieView>  with SingleTickerProviderStateMi
                         )
                             : Container(
                           height: 40.h,
-                          width: 300.w,
-                          padding: EdgeInsetsDirectional.symmetric(horizontal: 10),
+                          width: 280.w,
+                          padding: EdgeInsets.symmetric(horizontal: 5),
                           decoration: BoxDecoration(
                             color: Colors.black.withOpacity(0.5),
                             borderRadius: BorderRadius.circular(5.r),
@@ -184,53 +184,39 @@ class _MovieViewState extends State<MovieView>  with SingleTickerProviderStateMi
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton2<String>(
                               isExpanded: true,
-                              value: cubit.selectedCategoryId,
-                              items: [
-                                // Add the 'fav' category at the start of the list
-                                DropdownMenuItem<String>(
-                                  value: 'fav',
-                                  child: Text(
-                                    'Favorite',
-                                    style: TextStyle(color: Colors.white, fontSize: 14.sp),
-                                  ),
-                                ),
-                                // Add other categories after the "Favorite"
-                                ...cubit.categories
-                                    .where((item) => item['id'] != 'fav') // Avoid adding 'fav' again
-                                    .map((item) => DropdownMenuItem<String>(
-                                  value: item['id'],
-                                  child: Text(
-                                    item['name'] ?? '',
-                                    style: TextStyle(color: Colors.white, fontSize: 14.sp),
-                                  ),
-                                ))
-                                    .toList(),
-                              ],
-                              onChanged: (String? value) {
-                                if (value != null) {
-                                  if (value == 'fav') {
-                                    cubit.changeCategory(value, 'Favorite');
-                                    cubit.loadFavorites(); // Ensure favorites are loaded when selected
-                                  } else {
-                                    final category = cubit.categories.firstWhere((cat) => cat['id'] == value);
-                                    cubit.changeCategory(value, category['name']!);
-                                  }
-                                }
-                              },
-
-                              iconStyleData: IconStyleData(
-                                icon: Icon(Icons.arrow_drop_down, color: Colors.white, size: 24.sp),
-                              ),
                               dropdownStyleData: DropdownStyleData(
                                 decoration: BoxDecoration(
                                   color: Colors.black.withOpacity(0.5),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
+                              iconStyleData: IconStyleData(
+                                icon: Icon(Icons.arrow_drop_down, color: Colors.white, size: 24.sp),
+                              ),
+                              barrierColor: Colors.black.withOpacity(0.5),
+                              items: cubit.movieCategories
+                                  .map(
+                                    (String item) => DropdownMenuItem<String>(
+                                  value: item,
+                                  child: Text(
+                                    item,
+                                    style: TextStyle(fontSize: 14.sp, color: Colors.white),
+                                  ),
+                                ),
+                              )
+                                  .toList(),
+                              value: cubit.selectedMovieCategory,
+                              onChanged: (String? value) {
+                                if (value != null) {
+                                  cubit.changeMovieCategory(value);
+                                }
+                                cubit.toggleDropdown();
+                              },
                             ),
                           ),
                         ),
                       )
+
 
                     ],
                   )
@@ -239,182 +225,160 @@ class _MovieViewState extends State<MovieView>  with SingleTickerProviderStateMi
             ),
             SizedBox(height: size.height * 0.03),
 
-            /// Show animation when no favorites
-            if (cubit.selectedCategoryId == 'fav' && cubit.favoriteMovies.isEmpty)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: Column(
-                    children: [
-                      Text(
-                        'No Favorites Yet!',
-                        style: TextStyle(color: Colors.white, fontSize: 16.sp),
-                      ),
-                      SizedBox(height: 10.h),
-                  Center(
-                    child: AnimatedBuilder(
-                      animation: _controller,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: _pulseAnimation.value, // Apply the pulse scaling
-                          child: SvgPicture.asset(
-                            'assets/images/folder-error-svgrepo-com.svg', // Your SVG file path
-                            width: 200, // Adjust the size
-                            height: 200,
-                            color: Colors.white, // Set the color of the SVG if needed
-                          ),
-                        );
-                      },
-                    ),),
-                    ],
-                  ),
-                ),
-              ),
-
-
-
 
             /// Movie Grid
             Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 0.6,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemCount: cubit.selectedCategoryId == 'fav'
-                    ? cubit.favoriteMovies.length
-                    : cubit.allMovies.length,
-                itemBuilder: (context, index) {
-                  final movie = cubit.selectedCategoryId == 'fav'
-                      ? cubit.favoriteMovies[index]
-                      : cubit.allMovies[index];
+              child: BlocBuilder<MovieCubit, MovieState>(
+                builder: (context, state) {
+                  // Handle loading state
+                  if (state is MovieLoadingState) {
+                    return Center(
+                      child: SpinKitFadingCircle(
+                        color: Colors.white,
+                        size: 50.0,
+                      ),
+                    );
+                  }
 
-                  return Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () async {
-                          final streamId = movie['id'].toString(); // Extract the movie ID
-                          try {
-                            // Fetch movie details using the streamId
-                            final movieDetail = await cubit.fetchMovieDetails(streamId);
-
-                            // Navigate to MovieDetailScreen once movie details are fetched
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => MovieDetailScreen(
-                                  movieDetail: movieDetail!,
-                                  index: index,
-                                ),
-                              ),
-                            );
-                            if (result != null) {
-                              setState(() {});
-                              log('Updated: isFav = ${result['isFav']}, id = ${result['id']}');
-                            }
-                          } catch (e) {
-                            print('Error fetching movie details: $e');
-                          }
-                        },
-                        child: Stack(
+                  // Handle no data state
+                  if (state is MovieErrorState || cubit.filteredMovies.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: Column(
                           children: [
-                            Container(
-                              height: 130.h,
-                              width: 100.w,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(AppSize.s15.r),
-                                image: DecorationImage(
-                                  image: (movie['image']?.isNotEmpty ?? false)
-                                      ? NetworkImage(movie['image']!)
-                                      : const AssetImage('assets/images/movie.png')
-                                  as ImageProvider,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
+                            Text(
+                              'No Movies Found!',
+                              style: TextStyle(color: Colors.white, fontSize: 16.sp),
                             ),
-                            if (cubit.selectedCategoryId == 'fav')
-                              const Positioned(
-                                bottom: 10,
-                                right: 5,
-                                child: Icon(Icons.favorite, color: Colors.white, size: 28),
-                              ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 10.h),
-                      Flexible(
-                        child: Text(
-                          movie['title'] ?? 'Unknown',
-                          style: getRegularTitleStyle(
-                            color: ColorsManager.whiteColor,
-                            fontSize: AppSize.s12.sp,
+                    );
+                  }
+
+                  // Display the GridView with movies
+                  return GridView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      childAspectRatio: 0.6,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                    ),
+                    itemCount: cubit.filteredMovies.length, // Use filteredMovies here
+                    itemBuilder: (context, index) {
+                      final movieItem = cubit.filteredMovies[index];
+                     /* final isFavorite = cubit.favoriteMoviesList.any(
+                            (item) => item['title'] == movieItem.title,
+                      );
+                      final isRecent = cubit.recentMoviesList.any(
+                            (item) => item['title'] == movieItem.title,
+                      );*/
+
+                      return Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () async {
+                              final movieId = movieItem['id'].toString(); // Ensure movie_id is available
+
+                              if (movieId == null) {
+                                print("Movie ID is missing.");
+                                return;
+                              }
+
+                              // Call getMovieDetails method from MovieCubit
+                             // context.read<MovieCubit>().getMovieDetails(movieId);
+
+                             /* final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MovieDetailsView(movie: movieItem), // Pass the Movie model here
+                                ),
+                              );
+
+                              // Optionally refresh after interaction
+                              if (result != null) {
+                                cubit.loadFavoritesFromPrefs(); // Refresh lists after interaction
+                              }*/
+                            },
+                            child: Stack(
+                              children: [
+                                Container(
+                                  height: 130.h,
+                                  width: 100.w,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(AppSize.s15.r),
+                                  ),
+                                  child: movieItem['image'] != null && movieItem['image']!.startsWith('http')
+                                      ? Image.network(
+                                    movieItem['image']!,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) {
+                                        return child; // Show the image when it's loaded
+                                      }
+                                      return Center(child: CircularProgressIndicator());
+                                    },
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Image.asset('assets/images/error.png'); // Fallback image URL
+                                    },
+                                  )
+                                      : Image.asset('assets/images/movie.png', fit: BoxFit.cover), // Default local image
+                                ),
+                               /* if (isFavorite)
+                                  Positioned(
+                                    bottom: 10,
+                                    right: 5,
+                                    child: Icon(
+                                      Icons.favorite,
+                                      color: Colors.white,
+                                      size: 28,
+                                    ),
+                                  ),
+                                if (isRecent)
+                                  Positioned(
+                                    bottom: 10,
+                                    left: 5,
+                                    child: Icon(
+                                      Icons.history,
+                                      color: Colors.white,
+                                      size: 28,
+                                    ),
+                                  ),*/
+                              ],
+                            ),
                           ),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+                          SizedBox(height: 10.h),
+                          Flexible(
+                            child: Text(
+                              movieItem['title'] ?? 'Unknown',
+                              style: getRegularTitleStyle(
+                                color: ColorsManager.whiteColor,
+                                fontSize: AppSize.s12.sp,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   );
                 },
               ),
             ),
+
+
           ],
         );
       },
     );
   }
 
-  void _showOverlay(BuildContext context, MovieCubit cubit) {
-    _removeOverlay();
-    _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        width: 310.w,
-        child: CompositedTransformFollower(
-          link: _layerLink,
-          showWhenUnlinked: false,
-          offset: const Offset(0.0, 50.0),
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              width: 280.w,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: Column(
-                children: cubit.categories.map((category) {
-                  return InkWell(
-                    onTap: () {
-                      _searchController.text = category['name']!;
-                      cubit.changeCategory(category['id']!, category['name']!);
-                      _removeOverlay();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Text(
-                        category['name']!,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-    Overlay.of(context)?.insert(_overlayEntry!);
-  }
+
 
   void _removeOverlay() {
     _overlayEntry?.remove();

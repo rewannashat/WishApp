@@ -24,134 +24,125 @@ class MovieCubit extends Cubit<MovieState> {
   final String password = "12977281747688";
 
 
-
-  /*//== Favorite LOGIC ==//
-
-
-  List<Map<String, String>> allMovies = [];
-  List<Map<String, String>> filteredMovies = [];
-
-  final Set<int> _favorites = {};
+ /// drowpdown data
 
 
-  void toggleFavorite(int movieIndex) {
-    final movieId = int.tryParse(allMovies[movieIndex]['id'] ?? '');
-    if (movieId == null) return;
+  List<String> movieCategories = [];
+  Map<String, String> movieCategoryIdToNameMap = {};
+  String? selectedMovieCategory;
 
-    if (_favorites.contains(movieId)) {
-      _favorites.remove(movieId);
-    } else {
-      _favorites.add(movieId);
-    }
-    emit(FavoriteUpdated(Set<int>.from(_favorites)));
-  }
-
-  bool isFavorite(int movieIndex) {
-    final movieId = int.tryParse(allMovies[movieIndex]['id'] ?? '');
-    return _favorites.contains(movieId);
-  }
-
-  List<Map<String, String>> get favoriteMovies =>
-      _favorites.map((id) => allMovies.firstWhere((movie) => movie['id'] == id.toString(), orElse: () => {})).toList();
-
-
-  ///== Category LOGIC ==///
-
-  List<Map<String, String>> categories = [];
-  String? selectedCategoryId;
-  String selectedCategoryName = 'Favorite';
-
-
-
-
-// === Fetch Movie Categories ===
   Future<void> getMovieCategories() async {
+    emit(CategoryLoadedState());
+
     try {
-      final response = await _dio.get(baseUrl, queryParameters: {
+      final response = await Dio().get(baseUrl, queryParameters: {
         'username': username,
         'password': password,
         'action': 'get_vod_categories',
       });
 
       if (response.statusCode == 200) {
-        final data = response.data as List<dynamic>;
+        final List<dynamic> data = response.data;
 
-        categories = data
-            .map<Map<String, String>>((cat) => {
-          'id': cat['category_id'].toString(),
-          'name': cat['category_name'].toString(),
-        })
-            .toList();
-        // Add Favorite category manually
-        categories.add({'id': 'fav', 'name': 'Favorite'});
+        movieCategories.clear();
+        movieCategoryIdToNameMap.clear();
+        movieCategories.addAll(['Favorite', 'Recent View']);
 
-        // Select the first category by default
-        selectedCategoryId = categories.first['id'];
-        selectedCategoryName = categories.first['name']!;
+        for (var item in data) {
+          final categoryId = item['category_id'].toString();
+          final categoryName = item['category_name'].toString();
 
-        // Fetch movies for first category (not favorite)
-        if (selectedCategoryId != 'fav') {
-          await fetchMoviesForCategory(selectedCategoryId!);
+          movieCategoryIdToNameMap[categoryId] = categoryName;
+          movieCategories.add(categoryName);
         }
 
-        emit(CategoryLoadedState());
+        // حدد أول كاتيجوري حقيقية (مش Favorite أو Recent)
+        selectedMovieCategory = movieCategories.length > 2
+            ? movieCategories[2]
+            : 'Favorite';
+
+        changeMovieCategory(selectedMovieCategory!); // Call your own logic
+
+        emit(ToggleDropdownState());
+      } else {
+        emit(CategoryErrorState('Failed to load movie categories'));
       }
     } catch (e) {
-      print('Error fetching categories: $e');
-      emit(CategoryErrorState());
+      emit(CategoryErrorState(e.toString()));
     }
   }
 
-// === Fetch Movies for Selected Category ===
-  Future<void> fetchMoviesForCategory(String categoryId) async {
+
+  void changeMovieCategory(String name) {
+    selectedMovieCategory = name;
+
+    if (name == 'Favorite') {
+      loadFavorites();
+    } else if (name == 'Recent View') {
+      loadFavorites();
+    } else {
+      // البحث عن id الخاص بالاسم
+      final id = movieCategoryIdToNameMap.entries
+          .firstWhere((entry) => entry.value == name,
+          orElse: () => const MapEntry('', ''))
+          .key;
+
+      if (id.isNotEmpty) {
+        loadMoviesByCategory(id); // Your method to get movies by ID
+      }
+    }
+  }
+
+
+
+  /// data in gridview
+  List<MovieDetailModel> moviesList = [];
+  List<String> categories = [];
+
+
+
+  Future<void> loadMoviesByCategory(String categoryId) async {
+    emit(MovieLoadingState());
+
     try {
-      final response = await _dio.get(baseUrl, queryParameters: {
+      final response = await Dio().get(baseUrl, queryParameters: {
         'username': username,
         'password': password,
         'action': 'get_vod_streams',
       });
 
-      if (response.statusCode == 200 && response.data is List) {
-        final data = response.data as List;
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data;
 
-        allMovies = data
-            .where((movie) => movie['category_id'].toString() == categoryId)
-            .map<Map<String, String>>((movie) => {
-          'id': movie['stream_id'].toString(),
-          'title': movie['name'] ?? '',
-          'image': movie['stream_icon'] ?? '',
-        })
-            .toList();
+        // طباعة كل البيانات الراجعة (للتحقق)
+        print('🔹 Total movies received: ${data.length}');
+        print('🔹 Sample movie: ${data.first}');
 
-        //log('✅ Movies loaded for categoryId=$categoryId → ${allMovies.length} items');
-        emit(MovieLoaded());
+        // فلترة حسب category_id
+        final filtered = data.where((movie) {
+          return movie['category_id'] == categoryId;
+        }).toList();
+
+        // طباعة بعد الفلترة
+        print('✅ Filtered movies for category $categoryId: ${filtered.length}');
+        for (var movie in filtered) {
+          print('🎬 Movie: ${movie['name']}');
+        }
+
+        moviesList = filtered.map((e) => MovieDetailModel.fromJson(e)).toList();
+
+        emit(MoviesSuccessState());
+      } else {
+        print('❌ Error: ${response.statusMessage}');
+        emit(MovieErrorState('Failed to load movies'));
       }
     } catch (e) {
-      print('Error fetching movies: $e');
-      emit(MovieError());
+      print('🔥 Exception: $e');
+      emit(MovieErrorState(e.toString()));
     }
   }
 
-// === Handle Dropdown Change ===
-  void changeCategory(String id, String name) {
-    selectedCategoryId = id;
-    selectedCategoryName = name;
 
-    emit(ChangeCategoryState());
-
-    if (id != 'fav') {
-      fetchMoviesForCategory(id);
-    }
-  }
-
-// === Dropdown Toggle State ===
-  void toggleDropdown() {
-    emit(ToggleDropdownState());
-  }
-
-
-
-*/
 
   // == Favorite LOGIC ==//
 
@@ -198,52 +189,10 @@ class MovieCubit extends Cubit<MovieState> {
 
 // == Category LOGIC ==//
 
-  List<Map<String, String>> categories = [];
   String? selectedCategoryId;
   String selectedCategoryName = 'Favorite';
 
-  Future<void> getMovieCategories() async {
-    try {
-      final response = await _dio.get(baseUrl, queryParameters: {
-        'username': username,
-        'password': password,
-        'action': 'get_vod_categories',
-      });
 
-      if (response.statusCode == 200) {
-        final data = response.data as List<dynamic>;
-
-        // Create categories list and add "Favorite" at the beginning
-        categories = [
-          {'id': 'fav', 'name': 'Favorite'},
-        ];
-
-        // Add API categories to the list (ignoring 'fav' if it's already present)
-        categories.addAll(
-          data
-              .map<Map<String, String>>((cat) => {
-            'id': cat['category_id'].toString(),
-            'name': cat['category_name'].toString(),
-          })
-              .toList(),
-        );
-
-        // Set the first category (either the favorite or a valid one)
-        selectedCategoryId = categories.first['id'];
-        selectedCategoryName = categories.first['name']!;
-
-        // Fetch movies for the first category (not favorite)
-        if (selectedCategoryId != 'fav') {
-          await fetchMoviesForCategory(selectedCategoryId!);
-        }
-
-        emit(CategoryLoadedState());
-      }
-    } catch (e) {
-      print('Error fetching categories: $e');
-      emit(CategoryErrorState());
-    }
-  }
 
 
 
@@ -326,7 +275,7 @@ class MovieCubit extends Cubit<MovieState> {
         final jsonData = response.data;
 
         // Log the full response to see the structure
-      //  log('Movie Details Response: ${jsonEncode(jsonData)}');
+        //  log('Movie Details Response: ${jsonEncode(jsonData)}');
 
         if (jsonData != null && jsonData['info'] != null && jsonData['movie_data'] != null) {
           final movieDetail = MovieDetailModel.fromJson(jsonData);

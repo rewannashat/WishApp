@@ -53,6 +53,7 @@ dependencies:
   better_player: ^0.0.83
   chewie:
   flutter_svg: ^1.0.0
+  connectivity_plus: ^5.0.2
 
   # Loading Animations
   loading_animation_widget: ^1.2.0+4

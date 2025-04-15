@@ -6,18 +6,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:wish/presentation/screens/series/seris_viewModel/series_cubit.dart';
+import 'package:wish/presentation/screens/series/seris_viewModel/series_details_model.dart';
 import 'package:wish/presentation/screens/series/seris_viewModel/series_states.dart';
-
-
 
 class SeriesPlayerScreen extends StatefulWidget {
   final String streamId;
   final String extension;
+  final Series series;
 
   const SeriesPlayerScreen({
     Key? key,
     required this.streamId,
     required this.extension,
+    required this.series,
   }) : super(key: key);
 
   @override
@@ -25,8 +26,8 @@ class SeriesPlayerScreen extends StatefulWidget {
 }
 
 class _SeriesPlayerScreenState extends State<SeriesPlayerScreen> {
-  late String streamUrl;
-
+  String? streamUrl; // Make it nullable to avoid LateInitializationError
+  ChewieController? _chewieController; // Declare a ChewieController
 
   @override
   Widget build(BuildContext context) {
@@ -52,15 +53,20 @@ class _SeriesPlayerScreenState extends State<SeriesPlayerScreen> {
               ),
             );
           } else if (state is SeriesPlayerLoaded) {
+            streamUrl = state.chewieController.videoPlayerController.dataSource;
+            _chewieController = state.chewieController; // Assign ChewieController
+
             return Stack(
               children: [
-                Chewie(controller: state.chewieController),
+                Chewie(controller: _chewieController!),
                 Positioned(
                   top: 40, // Adjust this value to position your button
                   left: 10,
                   child: IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () {
+                      // Stop the video when navigating back
+                      _chewieController?.videoPlayerController.pause();
                       Navigator.pop(context); // Navigate back to the previous screen
                     },
                   ),
@@ -86,13 +92,16 @@ class _SeriesPlayerScreenState extends State<SeriesPlayerScreen> {
       ),
     );
   }
-
-  /*@override
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final cubit = SeriesCubit.get(context);
+    cubit.addToRecent(widget.series.toMap());
+  }
+  @override
   void dispose() {
-    // تأكد من إيقاف تشغيل الفيديو عند مغادرة الشاشة
-    if (mounted) {
-      MovieCubit.get(context).disposePlayer();
-    }
+    // Dispose of the ChewieController when the screen is disposed to stop the video
+    _chewieController?.dispose();
     super.dispose();
-  }*/
+  }
 }

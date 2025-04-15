@@ -23,7 +23,7 @@ class SeriesErrorState extends SeriesState {
 }
 
 class SeriesLoadedState extends SeriesState {
-  final List<Map<String, String>> seriesList;
+  final List<Series> seriesList;
 
   SeriesLoadedState(this.seriesList);
 }
@@ -58,6 +58,8 @@ class SeriesDetailsErrorState extends SeriesState {
 }
 
 class ChangeCategorySeasonsState extends SeriesState {}
+class UpdateEpisodesState extends SeriesState {}
+
 
 class FavoriteUpdated extends SeriesState {
   final Set<int> favorites;

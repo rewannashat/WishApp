@@ -23,6 +23,8 @@ import 'domian/bloc_observer.dart';
 import 'domian/local/sharedPref.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 
+import 'domian/ntwork_check_view.dart';
+
 
 Future<void> main() async {
 
@@ -37,9 +39,14 @@ Future<void> main() async {
     DevicePreview(
       enabled: !kReleaseMode,
       builder: (context) => GlobalLoaderOverlay(
-          useDefaultLoading: true,
-          child: MyApp()),
-    ),);
+        useDefaultLoading: true,
+        child: NetworkWrapper(
+          child: MyApp(),
+        ),
+      ),
+    ),
+  );
+
 }
 
 class MyApp extends StatelessWidget {

@@ -58,7 +58,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-   // log('Movie details for: ${movieDetail.name}');
+    // log('Movie details for: ${movieDetail.name}');
 
     void fetchDetails(String movieId) {
       context.read<MovieCubit>().fetchMovieDetails(movieId);
@@ -182,7 +182,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                         ),
                       );
 
-                    //  log('the data will sended ${widget.movieDetail.streamId} == ${widget.movieDetail.containerExtension}');
+                      //  log('the data will sended ${widget.movieDetail.streamId} == ${widget.movieDetail.containerExtension}');
                     },
                   ),
                   SizedBox(height: 10),
@@ -198,7 +198,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     borderRadius: 10,
                     onPressed: () {
                       // Trigger the fetch details with the movie's ID
-                    //  fetchDetails(widget.movieDetail.tmdbId.toString());
+                      //  fetchDetails(widget.movieDetail.tmdbId.toString());
                     },
                   ),
                 ],
@@ -216,7 +216,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               ),
             ),
             SizedBox(height: 10.h),
-           /* Padding(
+            /* Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10),
               child: Text(
                 'Director: ${widget.movieDetail.director ?? 'Unknown Director'}',
@@ -242,7 +242,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 }),
               ),
             )
-           /* BlocConsumer<MovieCubit, MovieState>(
+            /* BlocConsumer<MovieCubit, MovieState>(
               listener: (context, state) {},
               builder: (context, state) {
                 // Make sure cubit is accessed correctly
@@ -319,7 +319,3 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     );
   }
 }
-
-
-
-
