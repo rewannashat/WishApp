@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../BottomNav/bottomnavbar_view.dart';
 import 'deviceData_view.dart';
+import 'logins_viewModel/login_cubit.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -27,6 +29,10 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
       CurvedAnimation(parent: _controller, curve: Curves.linear),
     );
 
+
+    Future.delayed(Duration(milliseconds: 500), () {
+      context.read<LoginCubit>().login();
+    });
     _checkForPlaylist();
   }
 
@@ -39,8 +45,11 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
 
     if (mounted) {
       if (playlistName != null && playlistUrl != null) {
-        Navigator.of(context).pushReplacement(
+        /*Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const BottomNavBar()),
+        );*/
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const DeviceDataView()),
         );
       } else {
         Navigator.of(context).pushReplacement(

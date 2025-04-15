@@ -18,6 +18,7 @@ import '../../resources/colors-manager.dart';
 import '../../resources/constants/custom-textfield-constant.dart';
 import '../../resources/styles-manager.dart';
 import '../BottomNav/bottomnavbar_view.dart';
+import '../Live/live_view.dart';
 import 'movieDetails_view.dart';
 import 'movie_viewModel/movie_cubit.dart';
 
@@ -82,7 +83,10 @@ class _MovieViewState extends State<MovieView>  with SingleTickerProviderStateMi
                     children: [
                       IconButton(
                         icon: Icon(Icons.arrow_back, color: ColorsManager.whiteColor, size: 30.sp),
-                        onPressed: () {},
+                        onPressed: () {
+                          NormalNav(ctx: context , screen: LiveView());
+
+                        },
                       ),
                       Expanded(
                         child: CompositedTransformTarget(

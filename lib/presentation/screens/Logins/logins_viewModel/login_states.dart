@@ -37,6 +37,10 @@ class ActivePlayListErrorState extends LoginState {
 }
 
 
+class LoginTrialExpiredState extends LoginState {}
+
+
+
 class GetPlayListLoadingState extends LoginState {}
 
 class GetPlayListSucessState extends LoginState {

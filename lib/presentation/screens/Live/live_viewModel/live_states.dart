@@ -6,6 +6,19 @@ class ChangeCategoryState extends LiveStates {}
 
 //== Fav Icon STATES ==//
 class FavoritesUpdatedState extends LiveStates {}
+
+
+class FavoriteListLoadedState extends LiveStates {
+  final List<Map<String, String>> favoriteLiveList;
+  FavoriteListLoadedState(this.favoriteLiveList);
+}
+
+class FavoriteListUpdatedState extends LiveStates {
+  final List<Map<String, String>> favoriteLiveList;
+  FavoriteListUpdatedState(this.favoriteLiveList);
+}
+
+
 class DeleteFavState extends LiveStates {}
 class DropdownToggledState extends LiveStates {}
 
@@ -39,3 +52,5 @@ class GetStreamsErrorState extends LiveStates {
   final String error;
   GetStreamsErrorState(this.error);
 }
+
+class LiveLoadState extends LiveStates {}

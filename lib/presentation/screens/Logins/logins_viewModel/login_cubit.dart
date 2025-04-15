@@ -62,29 +62,30 @@ class LoginCubit extends Cubit<LoginState> {
 
         final playlists = data['playlists'] ?? [];
 
-        // Find the active playlist
+        await SharedPreferencesHelper.saveData(key: 'deviceKey', value: deviceKey);
+        await SharedPreferencesHelper.saveData(key: 'macAddress', value: macAddress);
+
         final activePlaylist = playlists.firstWhere(
               (playlist) => playlist['isActive'] == true,
           orElse: () => null,
         );
-        // Save to SharedPreferences if found
-        if (activePlaylist != null) {
-          await SharedPreferencesHelper.saveData(key: 'playlist_name', value:activePlaylist['name']);
-          await SharedPreferencesHelper.saveData(key: 'playlist_url', value:activePlaylist['url']);
-        }
-        await SharedPreferencesHelper.saveData(key: 'macAddress', value:macAddress);
 
-        log('Received Device Key: $deviceKey $isTrialActive');
+        if (activePlaylist != null) {
+          await SharedPreferencesHelper.saveData(key: 'playlist_name', value: activePlaylist['name']);
+          await SharedPreferencesHelper.saveData(key: 'playlist_url', value: activePlaylist['url']);
+        }
+
+        log('Received Device Key: $deviceKey  $macAddress $isTrialActive');
 
         if (isTrialActive) {
-          if (!_isDataLoaded) {  // تأكد من أنه يتم تحميل البيانات مرة واحدة فقط
+          if (!_isDataLoaded) {
             _isDataLoaded = true;
-            emit(FetchDataSucessState());  // بيانات النجاح
+            emit(FetchDataSucessState());
           }
-          return true; // Login success
+          return true;
         } else {
-          emit(FetchDataErrorState("Trial period expired"));
-          return false; // Trial expired
+          emit(LoginTrialExpiredState()); // <-- الحالة دي جديدة
+          return false;
         }
       } else {
         throw Exception('Unexpected response: ${response.statusCode}');
@@ -94,6 +95,8 @@ class LoginCubit extends Cubit<LoginState> {
       return false;
     }
   }
+
+
 
 
 

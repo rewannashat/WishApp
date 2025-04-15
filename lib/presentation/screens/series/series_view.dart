@@ -21,6 +21,7 @@ import '../../resources/colors-manager.dart';
 import '../../resources/constants/custom-textfield-constant.dart';
 import '../../resources/styles-manager.dart';
 import '../BottomNav/bottomnavbar_view.dart';
+import '../Live/live_view.dart';
 
 class SeriesView extends StatefulWidget {
   const SeriesView({super.key});
@@ -69,7 +70,9 @@ class _SeriesViewState extends State<SeriesView> {
                       color: ColorsManager.whiteColor,
                       size: 30.sp,
                     ),
-                    onPressed: () => {},
+                    onPressed: () => {
+                      NormalNav(ctx: context , screen: LiveView()),
+                    },
                   ),
                   SizedBox(width: 2.w), // Adjust spacing
                   Expanded(

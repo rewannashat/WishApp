@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wish/domian/local/sharedPref.dart';
 import 'package:wish/presentation/resources/font-manager.dart';
@@ -27,6 +28,8 @@ class _AddPlaylistScreenState extends State<AddPlaylistScreen> {
   bool isM3USelected = true;
 
   final _formKey = GlobalKey<FormState>();
+
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -101,31 +104,46 @@ class _AddPlaylistScreenState extends State<AddPlaylistScreen> {
                   _buildInputField('Password', passwordController),
                 ],
                 SizedBox(height: 40.h),
-                CustomButton(
-                    width: 350.w,
-                    high: 40.h,
-                    txt: 'Add Playlist',
-                    fontSize: FontSize.s15.sp,
-                    colorTxt: ColorsManager.whiteColor,
-                    colorButton: const Color(0xff7384a4),
-                    outLineBorder: false,
-                    fontWeight: FontWightManager.fontWeightRegular,
-                    borderRadius: 5.r,
-                    fontFamily: FontManager.fontFamAPP,
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        final cubit = LoginCubit.get(context);
+                isLoading
+                    ? SpinKitFadingCircle(
+                        color: Colors.white,
+                        size: 50.0,
+                      )
+                    : CustomButton(
+                        width: 350.w,
+                        high: 40.h,
+                        txt: 'Add Playlist',
+                        fontSize: FontSize.s15.sp,
+                        colorTxt: ColorsManager.whiteColor,
+                        colorButton: const Color(0xff7384a4),
+                        outLineBorder: false,
+                        fontWeight: FontWightManager.fontWeightRegular,
+                        borderRadius: 5.r,
+                        fontFamily: FontManager.fontFamAPP,
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            setState(() {
+                              isLoading = true;
+                            });
 
-                        final name = playlistNameController.text.trim();
-                        final url = m3uUrlController.text.trim();
+                            final cubit = LoginCubit.get(context);
+                            final name = playlistNameController.text.trim();
+                            final url = m3uUrlController.text.trim();
 
-                        cubit.addPlaylist(name: name, url: url).then((_) async {
-                          await SharedPreferencesHelper.saveData(key: 'playlist_name',value: name);
-                          await SharedPreferencesHelper.saveData(key:'playlist_url',value: url);
-                          NavAndRemove(ctx: context, screen: BottomNavBar());
-                        });
-                      }
-                    }),
+                            await cubit.addPlaylist(name: name, url: url);
+                            await SharedPreferencesHelper.saveData(
+                                key: 'playlist_name', value: name);
+                            await SharedPreferencesHelper.saveData(
+                                key: 'playlist_url', value: url);
+
+                            setState(() {
+                              isLoading = false;
+                            });
+
+                            NavAndRemove(ctx: context, screen: BottomNavBar());
+                          }
+                        },
+                      ),
                 const Spacer(),
                 GestureDetector(
                   onTap: _contactSupport,

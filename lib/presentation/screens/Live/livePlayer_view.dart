@@ -30,7 +30,6 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
   late BetterPlayerController _betterPlayerController;
   late LiveStream liveStream;
 
-
   @override
   void initState() {
     super.initState();
@@ -42,95 +41,75 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
       thumbnail: widget.thumbnail,
     );
 
-
-
-    // Initialize the player
     BetterPlayerDataSource dataSource = BetterPlayerDataSource(
       BetterPlayerDataSourceType.network,
       widget.streamUrl,
       videoFormat: BetterPlayerVideoFormat.hls,
       liveStream: true,
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-      },
+      headers: {"User-Agent": "Mozilla/5.0"},
     );
 
     _betterPlayerController = BetterPlayerController(
       BetterPlayerConfiguration(
         autoPlay: true,
         looping: false,
-        controlsConfiguration: BetterPlayerControlsConfiguration(
-          enableSkips: false,
-        ),
+        controlsConfiguration: BetterPlayerControlsConfiguration(enableSkips: false),
       ),
       betterPlayerDataSource: dataSource,
     );
-
   }
-
 
   @override
   Widget build(BuildContext context) {
-    LiveCubit cubit = LiveCubit.get(context);
-    bool isFavorite = cubit.isSeriesFavorite(liveStream.toMap());
-
-
     return Scaffold(
       backgroundColor: Colors.black,
-      body: BlocBuilder<LiveCubit, LiveStates>(
-        builder: (context, state) {
-          return Stack(
-            children: [
-              BetterPlayer(controller: _betterPlayerController),
+      body: Stack(
+        children: [
+          BetterPlayer(controller: _betterPlayerController),
 
-              // Back button
-              Positioned(
-                top: 40,
-                left: 16,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pop();
+          Positioned(
+            top: 40,
+            left: 16,
+            child: GestureDetector(
+              onTap: () {
+                _betterPlayerController.pause(); // Pause playback
+                _betterPlayerController.dispose(); // Dispose the player
+                Navigator.of(context).pop();
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  color: Colors.white24,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.arrow_back, color: Colors.white),
+              ),
+            ),
+          ),
+
+          // Favorite button
+          Positioned(
+            top: 40,
+            right: 16,
+            child: BlocBuilder<LiveCubit, LiveStates>(
+              builder: (context, state) {
+                final cubit = LiveCubit.get(context);
+                final isFavorite = cubit.isFavorite(liveStream.name);
+
+                return IconButton(
+                  icon: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.red : Colors.white,
+                    size: 28,
+                  ),
+                  onPressed: () async {
+                    await cubit.toggleFavorite(liveStream.toMap());
                   },
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: Colors.white24,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.arrow_back, color: Colors.white),
-                  ),
-                ),
-              ),
-
-              // Favorite button
-              Positioned(
-                top: 40,
-                right: 16,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Colors.white24,
-                    shape: BoxShape.circle,
-                  ),
-                  child:   IconButton(
-                    icon: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.white,
-                      size: 28,
-                    ),
-                    onPressed: () async {
-                      // Toggle favorite state using Cubit
-                      await cubit.toggleFavorite(liveStream.toMap());
-
-                      // Navigate back with updated favorite state
-                      Navigator.pop(context, {'isFav': !isFavorite, 'id': liveStream.streamId});
-                    },
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -147,6 +126,6 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
     final cubit = LiveCubit.get(context);
     cubit.addToRecent(liveStream.toMap());
   }
-
 }
+
 

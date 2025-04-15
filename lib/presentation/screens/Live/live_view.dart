@@ -206,6 +206,15 @@ class _LiveViewState extends State<LiveView> {
       );
     }
 
+    if (state is LiveLoadState) {
+      return Center(
+        child: SpinKitFadingCircle(
+          color: Colors.white,
+          size: 50.0,
+        ),
+      );
+    }
+
     return Expanded(
       child: GridView.builder(
         padding: EdgeInsets.symmetric(horizontal: 10),
@@ -228,23 +237,29 @@ class _LiveViewState extends State<LiveView> {
           return Column(
             children: [
               GestureDetector(
-                onTap: () {
+                onTap: () async {
                   final streamUrl =
                       'http://tgdns4k.com:8080/live/6665e332412/12977281747688/${stream.streamId}.m3u8';
 
-
-                  // Navigate to the live player screen
-                  NormalNav(
-                    ctx: context,
-                    screen: LivePlayerScreen(
-                      streamId: stream.streamId,
-                      name: stream.name,
-                      streamUrl: streamUrl,
-                      thumbnail: stream.thumbnail.toString(),
+                  // Navigate to the live player screen and wait for result
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LivePlayerScreen(
+                        streamId: stream.streamId,
+                        name: stream.name,
+                        streamUrl: streamUrl,
+                        thumbnail: stream.thumbnail.toString(),
+                      ),
                     ),
                   );
 
+                  // إذا تم حذف الفيديو من المفضلة داخل LivePlayerScreen
+                  if (result == true) {
+                    context.read<LiveCubit>().loadFavoritesFromPrefs(); // ⬅️ تحديث قائمة الفيفوريت
+                  }
                 },
+
                 child: Stack(
                   children: [
                     Container(
@@ -275,16 +290,6 @@ class _LiveViewState extends State<LiveView> {
                         child: Icon(
                           Icons.favorite,
                           color: Colors.red,
-                          size: 28,
-                        ),
-                      ),
-                    if (isRecent)
-                      Positioned(
-                        bottom: 10,
-                        right: 5,
-                        child: Icon(
-                          Icons.history,
-                          color: Colors.green,
                           size: 28,
                         ),
                       ),

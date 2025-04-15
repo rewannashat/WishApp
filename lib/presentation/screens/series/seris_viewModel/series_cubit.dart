@@ -78,7 +78,7 @@ class SeriesCubit extends Cubit<SeriesState> {
 
 
   Future<void> fetchSeriesForCategory(String categoryName) async {
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(Duration(milliseconds: 1));
     emit(SeriesLoadingState());
 
     try {
