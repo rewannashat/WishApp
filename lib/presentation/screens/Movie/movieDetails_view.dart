@@ -311,7 +311,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           radius: 40,
           backgroundImage: imageUrl.isNotEmpty
               ? NetworkImage(imageUrl)
-              : NetworkImage('https://media.giphy.com/media/y1ZBcOGOOtlpC/giphy.gif'),
+              : AssetImage('assets/images/Asset.png'),
         ),
         SizedBox(height: 5),
         Text(name, style: TextStyle(fontSize: 12.sp , color: Colors.white)),

@@ -322,10 +322,10 @@ class _MovieViewState extends State<MovieView>  with SingleTickerProviderStateMi
                                       return Center(child: CircularProgressIndicator());
                                     },
                                     errorBuilder: (context, error, stackTrace) {
-                                      return Image.asset('assets/images/error.png'); // Fallback image URL
+                                      return Image.asset('assets/images/Asset.png'); // Fallback image URL
                                     },
                                   )
-                                      : Image.asset('assets/images/movie.png', fit: BoxFit.cover), // Default local image
+                                      : Image.asset('assets/images/Asset.png', fit: BoxFit.cover), // Default local image
                                 ),
                                /* if (isFavorite)
                                   Positioned(

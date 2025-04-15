@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../BottomNav/bottomnavbar_view.dart';
 import 'deviceData_view.dart';
@@ -77,8 +78,8 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
             },
             child: Image.asset(
               'assets/images/Asset.png',
-              width: 150,
-              height: 150,
+              width: 150.w,
+              height: 150.h,
             ),
           ),
         ),

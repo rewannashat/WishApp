@@ -329,10 +329,10 @@ class _SeriesViewState extends State<SeriesView> {
                                     return Center(child: CircularProgressIndicator());
                                   },
                                   errorBuilder: (context, error, stackTrace) {
-                                    return Image.asset('assets/images/error.png'); // Fallback image URL
+                                    return Image.asset('assets/images/Asset.png'); // Fallback image URL
                                   },
                                 )
-                                    : Image.asset('assets/images/movie.png', fit: BoxFit.cover), // Default local image
+                                    : Image.asset('assets/images/Asset.png', fit: BoxFit.cover), // Default local image
                               ),
                               if (isFavorite)
                                 Positioned(
@@ -347,7 +347,7 @@ class _SeriesViewState extends State<SeriesView> {
                               if (isRecent)
                                 Positioned(
                                   bottom: 10,
-                                  left: 5,
+                                  right: 5,
                                   child: Icon(
                                     Icons.history,
                                     color: Colors.white,

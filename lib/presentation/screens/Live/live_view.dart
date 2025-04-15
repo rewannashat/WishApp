@@ -263,10 +263,10 @@ class _LiveViewState extends State<LiveView> {
                           return Center(child: CircularProgressIndicator());
                         },
                         errorBuilder: (context, error, stackTrace) {
-                          return Image.asset('assets/images/error.png');
+                          return Image.asset('assets/images/Asset.png');
                         },
                       )
-                          : Image.asset('assets/images/bein.png', fit: BoxFit.cover),
+                          : Image.asset('assets/images/Asset.png', fit: BoxFit.cover),
                     ),
                     if (isFavorite)
                       Positioned(
@@ -281,7 +281,7 @@ class _LiveViewState extends State<LiveView> {
                     if (isRecent)
                       Positioned(
                         bottom: 10,
-                        left: 5,
+                        right: 5,
                         child: Icon(
                           Icons.history,
                           color: Colors.green,
