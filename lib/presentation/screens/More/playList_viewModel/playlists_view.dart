@@ -55,62 +55,59 @@ class _PlaylistsViewState extends State<PlaylistsView> {
           SizedBox(width: 16.w),
         ],
       ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              SizedBox(height: 20.h),
-              BlocConsumer<LoginCubit, LoginState>(
-                listener: (context, state) {
-                  if (state is GetPlayListErrorState) {
-                    // Handle error state (e.g., show a dialog or Snackbar)
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.error)),
-                    );
-                  }
-                },
-                builder: (context, state) {
-                  if (state is GetPlayListLoadingState ||
-                      state is AddPlayListLoadingState ||
-                      state is ActivePlayListLoadingState) {
-                    return const Center(
-                      child: SpinKitFadingCircle(
-                        color: Colors.white,
-                        size: 50.0,
-                      ),
-                    );
-                  } else if (state is GetPlayListSucessState ||
-                      state is AddPlayListSucessState ||
-                      state is ActivePlayListSucessState) {
-                    final playlists = state is GetPlayListSucessState
-                        ? state.playlists
-                        : state is AddPlayListSucessState
-                        ? state.playlists
-                        : (state as ActivePlayListSucessState).playlists;
+      body: RefreshIndicator(
+        color: Colors.white,
+        backgroundColor: Colors.black,
+        onRefresh: () async {
+          _fetchData();
+        },
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                SizedBox(height: 20.h),
+                BlocConsumer<LoginCubit, LoginState>(
+                  listener: (context, state) {
+                    if (state is GetPlayListErrorState) {
+                      // Handle error state (e.g., show a dialog or Snackbar)
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(state.error)),
+                      );
+                    }
+                  },
+                  builder: (context, state) {
+                    if (state is GetPlayListLoadingState ||
+                        state is AddPlayListLoadingState ||
+                        state is ActivePlayListLoadingState) {
+                      return const Center(
+                        child: SpinKitFadingCircle(
+                          color: Colors.white,
+                          size: 50.0,
+                        ),
+                      );
+                    } else if (state is GetPlayListSucessState ||
+                        state is AddPlayListSucessState ||
+                        state is ActivePlayListSucessState) {
+                      final playlists = state is GetPlayListSucessState
+                          ? state.playlists
+                          : state is AddPlayListSucessState
+                          ? state.playlists
+                          : (state as ActivePlayListSucessState).playlists;
 
-                    // Check if the playlists are empty
-                    if (playlists.isEmpty) {
+                      // Check if the playlists are empty
+                      if (playlists.isEmpty) {
+                        return _buildEmptyState();
+                      }
+
+                      return _buildPlaylistGridView(playlists, context);
+                    } else {
                       return _buildEmptyState();
                     }
-
-                    return _buildPlaylistGridView(playlists, context);
-                  } else {
-                    return _buildEmptyState();
-                  }
-                },
-              ),
-              // Add a "Reload" button at the bottom to refresh the data
-              SizedBox(height: 20.h),
-              ElevatedButton(
-                onPressed: _fetchData,
-                child: Text('Reload Playlists', style: TextStyle(color: Colors.white)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.r)),
+                  },
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
