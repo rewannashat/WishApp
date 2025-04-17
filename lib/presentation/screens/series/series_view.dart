@@ -226,168 +226,175 @@ class _SeriesViewState extends State<SeriesView> {
           SizedBox(height: size.height * 0.03),
           /////
           Expanded(
-            child: BlocBuilder<SeriesCubit, SeriesState>(
-              builder: (context, state) {
-                // Handle loading state
-                if (state is SeriesLoadingState) {
-                  return Center(
-                    child: SpinKitFadingCircle(
-                      color: Colors.white,
-                      size: 50.0,
-                    ),
-                  );
-                }
+            child: RefreshIndicator(
+              color: Colors.white,
+              backgroundColor: Colors.black,
+              onRefresh: () async {
+                await cubit.refreshSeries();
+              },
+              child: BlocBuilder<SeriesCubit, SeriesState>(
+                builder: (context, state) {
+                  // Handle loading state
+                  if (state is SeriesLoadingState) {
+                    return Center(
+                      child: SpinKitFadingCircle(
+                        color: Colors.white,
+                        size: 50.0,
+                      ),
+                    );
+                  }
 
-                // Handle no data state
-                if (state is SeriesErrorState || cubit.filteredSeries.isEmpty ) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      child: Column(
+                  // Handle no data state
+                  if (state is SeriesErrorState || cubit.filteredSeries.isEmpty ) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: Column(
+                          children: [
+                              SpinKitFadingCircle(
+                              color: Colors.white,
+                              size: 50.0,
+                            ),
+                            Text(
+                              'No Series Found!',
+                              style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  if (state is SeriesLoadingState) {
+                    return Center(
+                      child: SpinKitFadingCircle(
+                        color: Colors.white,
+                        size: 50.0,
+                      ),
+                    );
+                  }
+                  // Display the GridView with series
+                  return GridView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      childAspectRatio: 0.6,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                    ),
+                    itemCount: cubit.filteredSeries.length, // Use filteredSeries here
+                    itemBuilder: (context, index) {
+                      final seriesItem = cubit.filteredSeries[index];
+                      final isFavorite = cubit.favoriteSeriesList.any(
+                            (item) => item['title'] == seriesItem.title,
+                      );
+                      final isRecent = cubit.recentSeriesList.any(
+                            (item) => item['title'] == seriesItem.title,
+                      );
+
+                      return Column(
                         children: [
-                            SpinKitFadingCircle(
-                            color: Colors.white,
-                            size: 50.0,
+                          GestureDetector(
+                            onTap: () async {
+                              final seriesId = seriesItem.seriesId; // Ensure series_id is available
+                              final serieeposid = seriesItem.episodes.toString() ;
+
+                              print('here $serieeposid');
+
+                              if (seriesId == null) {
+                                print("Series ID is missing.");
+                                return;
+                              }
+
+                              // Call getSeriesDetails method from SeriesCubit
+                             // context.read<SeriesCubit>().getSeriesDetails(seriesId);
+                              // Debug: print all cast member names
+                              final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => BlocProvider.value(
+                                    value: context.read<SeriesCubit>(),
+                                    child: SeriesDetailsView(series: seriesItem),
+                                  ),
+                                ),
+                              );
+                              /*final result = await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SeriesDetailsView(series: seriesItem), // Pass the Series model here
+                                ),
+                              );*/
+
+                              /* if (result != null) {
+                                cubit.loadFavoritesFromPrefs(); // Refresh lists after interaction
+                              }*/
+                            },
+                            child: Stack(
+                              children: [
+                                Container(
+                                  height: 130.h,
+                                  width: 100.w,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(AppSize.s15.r),
+                                  ),
+                                  child: seriesItem.imageUrl != null && seriesItem.imageUrl!.startsWith('http')
+                                      ? Image.network(
+                                    seriesItem.imageUrl!,
+                                    fit: BoxFit.cover,
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) {
+                                        return child; // Show the image when it's loaded
+                                      }
+                                      return Center(child: CircularProgressIndicator());
+                                    },
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Image.asset('assets/images/Asset.png'); // Fallback image URL
+                                    },
+                                  )
+                                      : Image.asset('assets/images/Asset.png', fit: BoxFit.cover), // Default local image
+                                ),
+                                if (isFavorite)
+                                  Positioned(
+                                    bottom: 10,
+                                    right: 5,
+                                    child: Icon(
+                                      Icons.favorite,
+                                      color: Colors.white,
+                                      size: 28,
+                                    ),
+                                  ),
+                                if (isRecent)
+                                  Positioned(
+                                    bottom: 10,
+                                    right: 5,
+                                    child: Icon(
+                                      Icons.history,
+                                      color: Colors.white,
+                                      size: 28,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
-                          Text(
-                            'No Series Found!',
-                            style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                          SizedBox(height: 10.h),
+                          Flexible(
+                            child: Text(
+                              seriesItem.title ?? 'Unknown',
+                              style: getRegularTitleStyle(
+                                color: ColorsManager.whiteColor,
+                                fontSize: AppSize.s12.sp,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ],
-                      ),
-                    ),
+                      );
+                    },
                   );
-                }
-                if (state is SeriesLoadingState) {
-                  return Center(
-                    child: SpinKitFadingCircle(
-                      color: Colors.white,
-                      size: 50.0,
-                    ),
-                  );
-                }
-                // Display the GridView with series
-                return GridView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: 0.6,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                  ),
-                  itemCount: cubit.filteredSeries.length, // Use filteredSeries here
-                  itemBuilder: (context, index) {
-                    final seriesItem = cubit.filteredSeries[index];
-                    final isFavorite = cubit.favoriteSeriesList.any(
-                          (item) => item['title'] == seriesItem.title,
-                    );
-                    final isRecent = cubit.recentSeriesList.any(
-                          (item) => item['title'] == seriesItem.title,
-                    );
-
-                    return Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () async {
-                            final seriesId = seriesItem.seriesId; // Ensure series_id is available
-                            final serieeposid = seriesItem.episodes.toString() ;
-
-                            print('here $serieeposid');
-
-                            if (seriesId == null) {
-                              print("Series ID is missing.");
-                              return;
-                            }
-
-                            // Call getSeriesDetails method from SeriesCubit
-                           // context.read<SeriesCubit>().getSeriesDetails(seriesId);
-                            // Debug: print all cast member names
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => BlocProvider.value(
-                                  value: context.read<SeriesCubit>(),
-                                  child: SeriesDetailsView(series: seriesItem),
-                                ),
-                              ),
-                            );
-                            /*final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SeriesDetailsView(series: seriesItem), // Pass the Series model here
-                              ),
-                            );*/
-
-                            /* if (result != null) {
-                              cubit.loadFavoritesFromPrefs(); // Refresh lists after interaction
-                            }*/
-                          },
-                          child: Stack(
-                            children: [
-                              Container(
-                                height: 130.h,
-                                width: 100.w,
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(AppSize.s15.r),
-                                ),
-                                child: seriesItem.imageUrl != null && seriesItem.imageUrl!.startsWith('http')
-                                    ? Image.network(
-                                  seriesItem.imageUrl!,
-                                  fit: BoxFit.cover,
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) {
-                                      return child; // Show the image when it's loaded
-                                    }
-                                    return Center(child: CircularProgressIndicator());
-                                  },
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Image.asset('assets/images/Asset.png'); // Fallback image URL
-                                  },
-                                )
-                                    : Image.asset('assets/images/Asset.png', fit: BoxFit.cover), // Default local image
-                              ),
-                              if (isFavorite)
-                                Positioned(
-                                  bottom: 10,
-                                  right: 5,
-                                  child: Icon(
-                                    Icons.favorite,
-                                    color: Colors.white,
-                                    size: 28,
-                                  ),
-                                ),
-                              if (isRecent)
-                                Positioned(
-                                  bottom: 10,
-                                  right: 5,
-                                  child: Icon(
-                                    Icons.history,
-                                    color: Colors.white,
-                                    size: 28,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: 10.h),
-                        Flexible(
-                          child: Text(
-                            seriesItem.title ?? 'Unknown',
-                            style: getRegularTitleStyle(
-                              color: ColorsManager.whiteColor,
-                              fontSize: AppSize.s12.sp,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
+                },
+              ),
             ),
           )
 

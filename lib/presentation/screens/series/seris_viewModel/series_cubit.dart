@@ -479,5 +479,22 @@ class SeriesCubit extends Cubit<SeriesState> {
 
 
 /// handle error api logic
+  Future<void> refreshSeries() async {
+    emit(SeriesLoadingState());
+
+    if (selectedCategory == 'Favorite') {
+      await loadFavoritesFromPrefs();
+      filteredSeries = favoriteSeriesList.map((map) => Series.mapToSeries(map)).toList();
+    } else if (selectedCategory == 'Recent View') {
+      await loadRecentFromPrefs();
+      filteredSeries = recentSeriesList.map((map) => Series.mapToSeries(map)).toList();
+    } else {
+      await fetchSeriesForCategory(selectedCategory);
+    }
+
+    emit(ChangeCategoryState());
+  }
+
+
 
 }
