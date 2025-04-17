@@ -109,12 +109,12 @@ class _SeriesViewState extends State<SeriesView> {
                                 Icon(Icons.search, color: Colors.white),
                               ),
                               onChanged: (value) {
-                                cubit.searchSeries(value);
+                              /*  cubit.searchSeries(value);
                                 if (value.isNotEmpty) {
                                   _showOverlay(context, cubit);
                                 } else {
                                   _removeOverlay();
-                                }
+                                }*/
                               },
                               onSubmitted: (value) {
                                 cubit.searchSeries(value);  // Perform the search
