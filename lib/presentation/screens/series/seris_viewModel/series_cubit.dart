@@ -75,6 +75,8 @@ class SeriesCubit extends Cubit<SeriesState> {
   // == Gridview data logic == //
   List<Series> allSeries = [];
   List<Series> filteredSeries = [];
+  List<Episode> alleposids = [];
+
 
 
   Future<void> fetchSeriesForCategory(String categoryName) async {
@@ -90,7 +92,7 @@ class SeriesCubit extends Cubit<SeriesState> {
 
       // Print the response for debugging
       print("Response Status Code: ${response.statusCode}");
-      print("Response Data: ${response.data}");
+      print("Response Data Series: ${response.data}");
 
       if (response.statusCode == 200) {
         final List data = response.data;
@@ -286,7 +288,6 @@ class SeriesCubit extends Cubit<SeriesState> {
         'series_id': seriesId,
       });
 
-      // طباعة الاستجابة
       print("Response Status Code: ${response.statusCode}");
       print("Response Data: ${response.data}");
 
@@ -294,34 +295,45 @@ class SeriesCubit extends Cubit<SeriesState> {
         final Map<String, dynamic> data = response.data;
 
         final info = data['info'] ?? {};
-        List episodeList = [];
         final episodesMap = data['episodes'] ?? {};
 
+        // ⭐️ طباعة وفحص الحلقات حسب المواسم
         if (episodesMap is Map<String, dynamic>) {
-          // تعديل هنا: التأكد من أن الحلقات تتواجد تحت الموسم الصحيح
           episodesMap.forEach((season, episodes) {
+            print("📺 Season $season:");
+
             if (episodes is List) {
-              episodeList.addAll(episodes);
+              for (var ep in episodes) {
+                print("➡️ Episode: ${ep['title'] ?? ''}, ID: ${ep['id']}, Num: ${ep['episode_num']}");
+              }
+            } else {
+              print("❌ Season $season is not a list of episodes.");
             }
           });
+
+          // ⭐️ استدعاء الميثود لتخزين الحلقات المصنّفة
+          setEpisodes(episodesMap);
         } else {
-          print("⚠️ Episodes map is not of expected type.");
+          print("⚠️ Episodes map is not in expected format.");
         }
 
-        // Now we prepare the final JSON with episodes
+        // لإنشاء Series، راح ندمج كل الحلقات في قائمة وحدة (لو محتاجينها في الشاشة)
+        List episodeList = [];
+        episodesMap.forEach((_, episodes) {
+          if (episodes is List) episodeList.addAll(episodes);
+        });
+
         final Map<String, dynamic> finalJson = {
           ...info,
           'series_id': seriesId,
           'episodes': episodeList,
         };
 
-        // Create Series object
         currentSeriesDetails = Series.fromJson(finalJson);
 
-        // Emit updated state
         emit(SeriesDetailsLoadedState(currentSeriesDetails!));
       } else {
-        print("⚠️ Response format is unexpected: ${response.statusCode}");
+        print("⚠️ Unexpected response format");
         emit(SeriesErrorState("Unexpected response format"));
       }
     } catch (e) {
@@ -349,7 +361,7 @@ class SeriesCubit extends Cubit<SeriesState> {
     emit(ChangeCategoryState());
   }
 
-  String selectedSeason = '';
+  String selectedSeason = '1';
 
   void changeSeason(String newSeason) {
     selectedSeason = newSeason;
@@ -451,6 +463,21 @@ class SeriesCubit extends Cubit<SeriesState> {
     chewieController?.dispose();
     chewieController = null;
   }
+
+
+  Map<String, List<Episode>> groupedEpisodes = {};
+
+  void setEpisodes(Map<String, dynamic> episodesMap) {
+    groupedEpisodes.clear();
+    episodesMap.forEach((season, episodesList) {
+      groupedEpisodes[season] = (episodesList as List)
+          .map((e) => Episode.fromJson(e))
+          .toList();
+    });
+    emit(SeasonsGroupedState());
+  }
+
+
 /// handle error api logic
 
 }

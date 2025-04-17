@@ -45,6 +45,7 @@ class _SeriesPlayerScreenState extends State<SeriesPlayerScreen> {
           }
         },
         builder: (context, state) {
+          // Display loading spinner if state is MoviePlayerInitial or SeriesPlayerLoade
           if (state is MoviePlayerInitial || state is SeriesPlayerLoade) {
             return const Center(
               child: SpinKitFadingCircle(
@@ -52,7 +53,10 @@ class _SeriesPlayerScreenState extends State<SeriesPlayerScreen> {
                 size: 50.0,
               ),
             );
-          } else if (state is SeriesPlayerLoaded) {
+          }
+
+          // Display video player only if the video has been successfully loaded
+          else if (state is SeriesPlayerLoaded) {
             streamUrl = state.chewieController.videoPlayerController.dataSource;
             _chewieController = state.chewieController; // Assign ChewieController
 
@@ -73,18 +77,23 @@ class _SeriesPlayerScreenState extends State<SeriesPlayerScreen> {
                 ),
               ],
             );
-          } else if (state is SeriesPlayerError) {
+          }
+
+          // Handle error state (if there's an issue loading the video)
+          else if (state is SeriesPlayerError) {
             return Center(
               child: Text(
                 state.error,
                 style: const TextStyle(color: Colors.red),
               ),
             );
-          } else {
+          }
+
+          // Fallback for unknown states (if any)
+          else {
             return const Center(
-              child: Text(
-                'Unknown state',
-                style: TextStyle(color: Colors.white),
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
             );
           }
@@ -92,16 +101,18 @@ class _SeriesPlayerScreenState extends State<SeriesPlayerScreen> {
       ),
     );
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     final cubit = SeriesCubit.get(context);
     cubit.addToRecent(widget.series.toMap());
   }
-  @override
+
+/*@override
   void dispose() {
     // Dispose of the ChewieController when the screen is disposed to stop the video
     _chewieController?.dispose();
     super.dispose();
-  }
+  }*/
 }

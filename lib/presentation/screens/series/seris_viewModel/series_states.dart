@@ -13,6 +13,8 @@ class CastLoadingState extends SeriesState {}
 class CastLoadedState extends SeriesState {}
 
 class SeriesLoadingState extends SeriesState {}
+class SeasonsGroupedState extends SeriesState {}
+
 
 class SeriesSuccessState extends SeriesState {}
 
@@ -50,7 +52,9 @@ class SeriesDetailsLoadedState extends SeriesState {
   final Series series;
 
   SeriesDetailsLoadedState(this.series);
+
 }
+
 
 class SeriesDetailsErrorState extends SeriesState {
   final String error;

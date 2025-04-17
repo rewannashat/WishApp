@@ -290,6 +290,9 @@ class _SeriesViewState extends State<SeriesView> {
                         GestureDetector(
                           onTap: () async {
                             final seriesId = seriesItem.seriesId; // Ensure series_id is available
+                            final serieeposid = seriesItem.episodes.toString() ;
+
+                            print('here $serieeposid');
 
                             if (seriesId == null) {
                               print("Series ID is missing.");
@@ -297,16 +300,23 @@ class _SeriesViewState extends State<SeriesView> {
                             }
 
                             // Call getSeriesDetails method from SeriesCubit
-                            context.read<SeriesCubit>().getSeriesDetails(seriesId);
-                            //  context.read<SeriesCubit>().debugEpisodes(seriesItem);
+                           // context.read<SeriesCubit>().getSeriesDetails(seriesId);
                             // Debug: print all cast member names
-
                             final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BlocProvider.value(
+                                  value: context.read<SeriesCubit>(),
+                                  child: SeriesDetailsView(series: seriesItem),
+                                ),
+                              ),
+                            );
+                            /*final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => SeriesDetailsView(series: seriesItem), // Pass the Series model here
                               ),
-                            );
+                            );*/
 
                             /* if (result != null) {
                               cubit.loadFavoritesFromPrefs(); // Refresh lists after interaction

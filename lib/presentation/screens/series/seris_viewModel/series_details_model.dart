@@ -148,13 +148,16 @@ class CastMember {
 }
 
 class Episode {
-  final int id;
+  final String id;
   final int episodeNum;
   final String title;
   final String containerExtension;
   final String duration;
-  final int durationSecs;
-  final VideoInfo? video;
+  final int bitrate;
+  final String customSid;
+  final int added;
+  final int season;
+  final String directSource;
 
   Episode({
     required this.id,
@@ -162,30 +165,35 @@ class Episode {
     required this.title,
     required this.containerExtension,
     required this.duration,
-    required this.durationSecs,
-    required this.video,
+    required this.bitrate,
+    required this.customSid,
+    required this.added,
+    required this.season,
+    required this.directSource,
   });
 
   factory Episode.fromJson(Map<String, dynamic> json) {
-    final info = json['info'] ?? {};
-    final video = info['video'] != null ? VideoInfo.fromJson(info['video']) : null;
-
     return Episode(
-      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
-      episodeNum: json['episode_num'] is int
-          ? json['episode_num']
-          : int.tryParse(json['episode_num'].toString()) ?? 0,
-      title: json['title'] ?? 'Untitled',  // Default value for title
-      containerExtension: json['container_extension'] ?? '',
-      duration: info['duration'] ?? 'Unknown',  // Default value for duration
-      durationSecs: info['duration_secs'] is int
-          ? info['duration_secs']
-          : int.tryParse(info['duration_secs'].toString()) ?? 0,
-      video: video,
+        id: json['id']?.toString() ?? '',
+        episodeNum: json['episode_num'] is int
+            ? json['episode_num']
+            : int.tryParse(json['episode_num']?.toString() ?? '0') ?? 0,
+        title: json['title']?.toString() ?? '',
+        containerExtension: json['container_extension']?.toString() ?? '',
+    duration: json['info']?['duration']?.toString() ?? '',
+    bitrate: json['bitrate'] is int
+    ? json['bitrate']
+        : int.tryParse(json['bitrate']?.toString() ?? '0') ?? 0,
+    customSid: json['custom_sid']?.toString() ?? '',
+    added: json['added'] is int
+    ? json['added']
+        : int.tryParse(json['added']?.toString() ?? '0') ?? 0,
+    season: json['season'] is int
+    ? json['season']
+        : int.tryParse(json['season']?.toString() ?? '1') ?? 1,
+    directSource: json['direct_source']?.toString() ?? '',
     );
-  }
-
-
+    }
 
   Map<String, dynamic> toJson() {
     return {
@@ -195,47 +203,14 @@ class Episode {
       'container_extension': containerExtension,
       'info': {
         'duration': duration,
-        'duration_secs': durationSecs,
-        'video': video?.toJson(),
       },
-    };
-  }
-
-
-}
-
-class VideoInfo {
-  final int index;
-  final String codecName;
-  final String codecLongName;
-  final String profile;
-  final String codecType;
-
-  VideoInfo({
-    required this.index,
-    required this.codecName,
-    required this.codecLongName,
-    required this.profile,
-    required this.codecType,
-  });
-
-  factory VideoInfo.fromJson(Map<String, dynamic> json) {
-    return VideoInfo(
-      index: json['index'] ?? 0,
-      codecName: json['codec_name'] ?? '',
-      codecLongName: json['codec_long_name'] ?? '',
-      profile: json['profile'] ?? '',
-      codecType: json['codec_type'] ?? '',
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'index': index,
-      'codec_name': codecName,
-      'codec_long_name': codecLongName,
-      'profile': profile,
-      'codec_type': codecType,
+      'bitrate': bitrate,
+      'custom_sid': customSid,
+      'added': added,
+      'season': season,
+      'direct_source': directSource,
     };
   }
 }
+
+

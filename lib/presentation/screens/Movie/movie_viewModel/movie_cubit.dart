@@ -5,9 +5,7 @@ import 'package:bloc/bloc.dart';
 import 'package:chewie/chewie.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
-import '../../../../domian/local/sharedPref.dart';
 import 'cast_model.dart';
 import 'movie_model.dart';
 import 'movie_states.dart';
@@ -24,146 +22,15 @@ class MovieCubit extends Cubit<MovieState> {
   final String password = "12977281747688";
 
 
- /// drowpdown data
 
+  /*//== Favorite LOGIC ==//
 
-  List<String> movieCategories = [];
-  Map<String, String> movieCategoryIdToNameMap = {};
-  String? selectedMovieCategory;
-
-  Future<void> getMovieCategories() async {
-    emit(CategoryLoadedState());
-
-    try {
-      final response = await Dio().get(baseUrl, queryParameters: {
-        'username': username,
-        'password': password,
-        'action': 'get_vod_categories',
-      });
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-
-        movieCategories.clear();
-        movieCategoryIdToNameMap.clear();
-        movieCategories.addAll(['Favorite', 'Recent View']);
-
-        for (var item in data) {
-          final categoryId = item['category_id'].toString();
-          final categoryName = item['category_name'].toString();
-
-          movieCategoryIdToNameMap[categoryId] = categoryName;
-          movieCategories.add(categoryName);
-        }
-
-        // حدد أول كاتيجوري حقيقية (مش Favorite أو Recent)
-        selectedMovieCategory = movieCategories.length > 2
-            ? movieCategories[2]
-            : 'Favorite';
-
-        changeMovieCategory(selectedMovieCategory!); // Call your own logic
-
-        emit(ToggleDropdownState());
-      } else {
-        emit(CategoryErrorState('Failed to load movie categories'));
-      }
-    } catch (e) {
-      emit(CategoryErrorState(e.toString()));
-    }
-  }
-
-
-  void changeMovieCategory(String name) {
-    selectedMovieCategory = name;
-
-    if (name == 'Favorite') {
-      loadFavorites();
-    } else if (name == 'Recent View') {
-      loadFavorites();
-    } else {
-      // البحث عن id الخاص بالاسم
-      final id = movieCategoryIdToNameMap.entries
-          .firstWhere((entry) => entry.value == name,
-          orElse: () => const MapEntry('', ''))
-          .key;
-
-      if (id.isNotEmpty) {
-        loadMoviesByCategory(id); // Your method to get movies by ID
-      }
-    }
-  }
-
-
-
-  /// data in gridview
-  List<MovieDetailModel> moviesList = [];
-  List<String> categories = [];
-
-
-
-  Future<void> loadMoviesByCategory(String categoryId) async {
-    emit(MovieLoadingState());
-
-    try {
-      final response = await Dio().get(baseUrl, queryParameters: {
-        'username': username,
-        'password': password,
-        'action': 'get_vod_streams',
-      });
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = response.data;
-
-        // طباعة كل البيانات الراجعة (للتحقق)
-        print('🔹 Total movies received: ${data.length}');
-        print('🔹 Sample movie: ${data.first}');
-
-        // فلترة حسب category_id
-        final filtered = data.where((movie) {
-          return movie['category_id'] == categoryId;
-        }).toList();
-
-        // طباعة بعد الفلترة
-        print('✅ Filtered movies for category $categoryId: ${filtered.length}');
-        for (var movie in filtered) {
-          print('🎬 Movie: ${movie['name']}');
-        }
-
-        moviesList = filtered.map((e) => MovieDetailModel.fromJson(e)).toList();
-
-        emit(MoviesSuccessState());
-      } else {
-        print('❌ Error: ${response.statusMessage}');
-        emit(MovieErrorState('Failed to load movies'));
-      }
-    } catch (e) {
-      print('🔥 Exception: $e');
-      emit(MovieErrorState(e.toString()));
-    }
-  }
-
-
-
-  // == Favorite LOGIC ==//
 
   List<Map<String, String>> allMovies = [];
   List<Map<String, String>> filteredMovies = [];
+
   final Set<int> _favorites = {};
 
-  // Load favorites from SharedPreferences
-  void loadFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    final favoriteIds = prefs.getStringList('favoriteMovies') ?? [];
-    _favorites.addAll(favoriteIds.map((e) => int.parse(e)));
-    emit(FavoriteLoadedState(Set<int>.from(_favorites)));
-  }
-
-  // Save favorites to SharedPreferences
-  void saveFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    final favoriteIds = _favorites.map((e) => e.toString()).toList();
-    prefs.setStringList('favoriteMovies', favoriteIds);
-  }
 
   void toggleFavorite(int movieIndex) {
     final movieId = int.tryParse(allMovies[movieIndex]['id'] ?? '');
@@ -174,7 +41,132 @@ class MovieCubit extends Cubit<MovieState> {
     } else {
       _favorites.add(movieId);
     }
-    saveFavorites();  // Save updated favorites to SharedPreferences
+    emit(FavoriteUpdated(Set<int>.from(_favorites)));
+  }
+
+  bool isFavorite(int movieIndex) {
+    final movieId = int.tryParse(allMovies[movieIndex]['id'] ?? '');
+    return _favorites.contains(movieId);
+  }
+
+  List<Map<String, String>> get favoriteMovies =>
+      _favorites.map((id) => allMovies.firstWhere((movie) => movie['id'] == id.toString(), orElse: () => {})).toList();
+
+
+  ///== Category LOGIC ==///
+
+  List<Map<String, String>> categories = [];
+  String? selectedCategoryId;
+  String selectedCategoryName = 'Favorite';
+
+
+
+
+// === Fetch Movie Categories ===
+  Future<void> getMovieCategories() async {
+    try {
+      final response = await _dio.get(baseUrl, queryParameters: {
+        'username': username,
+        'password': password,
+        'action': 'get_vod_categories',
+      });
+
+      if (response.statusCode == 200) {
+        final data = response.data as List<dynamic>;
+
+        categories = data
+            .map<Map<String, String>>((cat) => {
+          'id': cat['category_id'].toString(),
+          'name': cat['category_name'].toString(),
+        })
+            .toList();
+        // Add Favorite category manually
+        categories.add({'id': 'fav', 'name': 'Favorite'});
+
+        // Select the first category by default
+        selectedCategoryId = categories.first['id'];
+        selectedCategoryName = categories.first['name']!;
+
+        // Fetch movies for first category (not favorite)
+        if (selectedCategoryId != 'fav') {
+          await fetchMoviesForCategory(selectedCategoryId!);
+        }
+
+        emit(CategoryLoadedState());
+      }
+    } catch (e) {
+      print('Error fetching categories: $e');
+      emit(CategoryErrorState());
+    }
+  }
+
+// === Fetch Movies for Selected Category ===
+  Future<void> fetchMoviesForCategory(String categoryId) async {
+    try {
+      final response = await _dio.get(baseUrl, queryParameters: {
+        'username': username,
+        'password': password,
+        'action': 'get_vod_streams',
+      });
+
+      if (response.statusCode == 200 && response.data is List) {
+        final data = response.data as List;
+
+        allMovies = data
+            .where((movie) => movie['category_id'].toString() == categoryId)
+            .map<Map<String, String>>((movie) => {
+          'id': movie['stream_id'].toString(),
+          'title': movie['name'] ?? '',
+          'image': movie['stream_icon'] ?? '',
+        })
+            .toList();
+
+        //log('✅ Movies loaded for categoryId=$categoryId → ${allMovies.length} items');
+        emit(MovieLoaded());
+      }
+    } catch (e) {
+      print('Error fetching movies: $e');
+      emit(MovieError());
+    }
+  }
+
+// === Handle Dropdown Change ===
+  void changeCategory(String id, String name) {
+    selectedCategoryId = id;
+    selectedCategoryName = name;
+
+    emit(ChangeCategoryState());
+
+    if (id != 'fav') {
+      fetchMoviesForCategory(id);
+    }
+  }
+
+// === Dropdown Toggle State ===
+  void toggleDropdown() {
+    emit(ToggleDropdownState());
+  }
+
+
+
+*/
+
+  // == Favorite LOGIC ==//
+
+  List<Map<String, String>> allMovies = [];
+  List<Map<String, String>> filteredMovies = [];
+
+  final Set<int> _favorites = {};
+
+  void toggleFavorite(int movieIndex) {
+    final movieId = int.tryParse(allMovies[movieIndex]['id'] ?? '');
+    if (movieId == null) return;
+
+    if (_favorites.contains(movieId)) {
+      _favorites.remove(movieId);
+    } else {
+      _favorites.add(movieId);
+    }
     emit(FavoriteUpdated(Set<int>.from(_favorites)));
   }
 
@@ -189,10 +181,52 @@ class MovieCubit extends Cubit<MovieState> {
 
 // == Category LOGIC ==//
 
+  List<Map<String, String>> categories = [];
   String? selectedCategoryId;
   String selectedCategoryName = 'Favorite';
 
+  Future<void> getMovieCategories() async {
+    try {
+      final response = await _dio.get(baseUrl, queryParameters: {
+        'username': username,
+        'password': password,
+        'action': 'get_vod_categories',
+      });
 
+      if (response.statusCode == 200) {
+        final data = response.data as List<dynamic>;
+
+        // Create categories list and add "Favorite" at the beginning
+        categories = [
+          {'id': 'fav', 'name': 'Favorite'},
+        ];
+
+        // Add API categories to the list (ignoring 'fav' if it's already present)
+        categories.addAll(
+          data
+              .map<Map<String, String>>((cat) => {
+            'id': cat['category_id'].toString(),
+            'name': cat['category_name'].toString(),
+          })
+              .toList(),
+        );
+
+        // Set the first category (either the favorite or a valid one)
+        selectedCategoryId = categories.first['id'];
+        selectedCategoryName = categories.first['name']!;
+
+        // Fetch movies for the first category (not favorite)
+        if (selectedCategoryId != 'fav') {
+          await fetchMoviesForCategory(selectedCategoryId!);
+        }
+
+        emit(CategoryLoadedState());
+      }
+    } catch (e) {
+      print('Error fetching categories: $e');
+      emit(CategoryErrorState());
+    }
+  }
 
 
 
@@ -312,7 +346,7 @@ class MovieCubit extends Cubit<MovieState> {
             final actor = results[0]; // Get the top result
             final profilePath = actor['profile_path'];
             final profileImage = profilePath != null
-                ? 'https://image.tmdb.org/t/p/w500$profilePath'
+                ? 'https://image.tmdb.org/t/p/w500/$profilePath'
                 : '';
 
             castMembers.add(CastMemberModel(name: name, profileImage: profileImage));
