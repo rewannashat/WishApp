@@ -46,11 +46,11 @@ class MovieDetailModel {
   });
 
   factory MovieDetailModel.fromJson(Map<String, dynamic> json) {
-    final info = json['info'] ?? {};
-    final movieData = json['movie_data'] ?? {};
+    final info = json['info'] ?? json; // fallback to root if info is missing
+    final movieData = json['movie_data'] ?? json; // fallback to root if movie_data is missing
 
     return MovieDetailModel(
-      movieImage: info['movie_image'] ?? '',
+      movieImage: info['movie_image'] ?? info['stream_icon'] ?? '',
       backdropPath: List<String>.from(info['backdrop_path'] ?? []),
       tmdbId: info['tmdb_id']?.toString() ?? '',
       youtubeTrailer: info['youtube_trailer'] ?? '',
@@ -75,15 +75,16 @@ class MovieDetailModel {
     );
   }
 
+
   // Used to map LiveStream to MovieDetailModel
   factory MovieDetailModel.mapToMovie(Map<String, String> map) {
     return MovieDetailModel(
-      movieImage: map['movie_image'] ?? '',
+      movieImage: map['stream_icon'] ?? '',
       backdropPath: [],
       tmdbId: '',
       youtubeTrailer: '',
       genre: '',
-      plot: '',
+      plot:map['plot'] ?? '',
       cast: '',
       rating: '',
       director: '',

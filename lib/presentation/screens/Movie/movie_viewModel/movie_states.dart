@@ -14,7 +14,11 @@ class CategoryErrorState extends MovieState{}
 
 
 class MovieLoaded extends MovieState {}
-class MovieError extends MovieState {}
+class GetMovieSuccessState extends MovieState {}
+class MovieError extends MovieState {
+  final String error;
+  MovieError(this.error);
+}
 
 
 class MovieLoadingState extends MovieState {}
@@ -33,6 +37,12 @@ class MovieErrorState extends MovieState {
   MovieErrorState(this.error);
 }
 
+class MovieDetailsLoaded extends MovieState {
+  final MovieDetailModel movieDetail;
+
+  MovieDetailsLoaded(this.movieDetail);
+}
+
 
 
 class FavoriteUpdated extends MovieState {
@@ -41,7 +51,7 @@ class FavoriteUpdated extends MovieState {
 }
 
 class SearchMoviesState extends MovieState {
-  final List<Map<String, String>> filteredMovies;
+  final List<MovieDetailModel> filteredMovies;
   SearchMoviesState(this.filteredMovies);
 }
 
@@ -65,3 +75,5 @@ class MoviePlayerError extends MovieState {
 
   MoviePlayerError(this.error);
 }
+
+class SuccessFavLoadState extends MovieState {}

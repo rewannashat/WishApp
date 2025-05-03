@@ -363,7 +363,7 @@ class _SeriesViewState extends State<SeriesView> {
                                       size: 28,
                                     ),
                                   ),
-                                if (isRecent)
+                               /* if (isRecent)
                                   Positioned(
                                     bottom: 10,
                                     right: 5,
@@ -372,7 +372,7 @@ class _SeriesViewState extends State<SeriesView> {
                                       color: Colors.white,
                                       size: 28,
                                     ),
-                                  ),
+                                  ),*/
                               ],
                             ),
                           ),

@@ -67,6 +67,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
         children: [
           BetterPlayer(controller: _betterPlayerController),
 
+          // Back Button
           Positioned(
             top: 40,
             left: 16,
@@ -87,7 +88,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
             ),
           ),
 
-          // Favorite button
+          // Favorite Button
           Positioned(
             top: 40,
             right: 16,
@@ -116,7 +117,7 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
 
   @override
   void dispose() {
-    _betterPlayerController.dispose();
+    _betterPlayerController.dispose(); // Ensure player is disposed when leaving the screen
     super.dispose();
   }
 
@@ -124,8 +125,9 @@ class _LivePlayerScreenState extends State<LivePlayerScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final cubit = LiveCubit.get(context);
-    cubit.addToRecent(liveStream.toMap());
+    cubit.addToRecent(liveStream.toMap()); // Ensure the stream is added to recent list
   }
 }
+
 
 

@@ -11,6 +11,7 @@ import '../../resources/constants/custom-button-constant.dart';
 import '../../resources/constants/custom-staticwidget.dart';
 import '../../resources/constants/custom-textfield-constant.dart';
 import '../BottomNav/bottomnavbar_view.dart';
+import 'deviceData_view.dart';
 import 'logins_viewModel/login_cubit.dart';
 
 class AddPlaylistScreen extends StatefulWidget {
@@ -50,7 +51,21 @@ class _AddPlaylistScreenState extends State<AddPlaylistScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 100.h),
+                SizedBox(height: 20.h),
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: ColorsManager.whiteColor,
+                      size: 30.sp,
+                    ),
+                    onPressed: () => {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => DeviceDataView(),))
+                    },
+                  ),
+                ),
+                SizedBox(height: 60.h),
                 // Toggle between M3U and Xtream
                 Container(
                   height: 40.h,

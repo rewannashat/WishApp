@@ -361,7 +361,7 @@ class SeriesCubit extends Cubit<SeriesState> {
     emit(ChangeCategoryState());
   }
 
-  String selectedSeason = '1';
+  String selectedSeason ='1';
 
   void changeSeason(String newSeason) {
     selectedSeason = newSeason;

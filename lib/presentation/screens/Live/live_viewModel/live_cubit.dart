@@ -125,7 +125,7 @@ class LiveCubit extends Cubit<LiveStates> {
       if (response.statusCode == 200) {
         final List data = response.data;
 
-      //  print(response.data);  // Check if stream_icon is present
+        print(response.data);  // Check if stream_icon is present
 
 
         allLive = data.map<LiveStream>((e) {

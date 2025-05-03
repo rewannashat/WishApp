@@ -146,32 +146,34 @@ class _DeviceDataViewState extends State<DeviceDataView> {
                     borderRadius: 5.r,
                     fontFamily: FontManager.fontFamAPP,
                     onPressed: () async {
-                      final result = await cubit.login();
-                      if(await result) {
-                        NavAndRemove(ctx: context,screen: AddPlaylistScreen());
-                      } else {
-                        AwesomeDialog(
-                          context: context,
-                          dialogType: DialogType.warning,
-                          animType: AnimType.scale,
-                          headerAnimationLoop: false,
-                          title: 'Trial Period Expired',
-                          desc: 'You need to subscribe to continue using the app.',
-                          btnOkText: 'OK',
-                          btnOkOnPress: () {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (_) => SplashView()),
-                            );
-                          },
-                          btnOkColor: Colors.redAccent,
-                          customHeader: Lottie.asset(
-                            'assets/animation/Animation - 1743562215054.json',
-                            height: 150,
-                            repeat: true,
-                          ),
-                        )..show();
-                      }
+                      NavAndRemove(ctx: context,screen: AddPlaylistScreen());
+
+                      // final result = await cubit.login();
+                      // if(await result) {
+                      //   NavAndRemove(ctx: context,screen: AddPlaylistScreen());
+                      // }/* else {
+                      //   AwesomeDialog(
+                      //     context: context,
+                      //     dialogType: DialogType.warning,
+                      //     animType: AnimType.scale,
+                      //     headerAnimationLoop: false,
+                      //     title: 'Trial Period Expired',
+                      //     desc: 'You need to subscribe to continue using the app.',
+                      //     btnOkText: 'OK',
+                      //     btnOkOnPress: () {
+                      //       Navigator.pushReplacement(
+                      //         context,
+                      //         MaterialPageRoute(builder: (_) => SplashView()),
+                      //       );
+                      //     },
+                      //     btnOkColor: Colors.redAccent,
+                      //     customHeader: Lottie.asset(
+                      //       'assets/animation/Animation - 1743562215054.json',
+                      //       height: 150,
+                      //       repeat: true,
+                      //     ),
+                      //   )..show();
+                      // }*/
                     },
                   ),
                 ),
@@ -190,10 +192,12 @@ class _DeviceDataViewState extends State<DeviceDataView> {
                     borderRadius: 5.r,
                     fontFamily: FontManager.fontFamAPP,
                     onPressed: ()  async{
-                      final result = await cubit.login();
+                      NavAndRemove(ctx: context , screen: BottomNavBar());
+
+                     /* final result = await cubit.login();
                       if(await result) {
                         NavAndRemove(ctx: context , screen: BottomNavBar());
-                      } else {
+                      } *//*else {
                         AwesomeDialog(
                           context: context,
                           dialogType: DialogType.warning,
@@ -215,7 +219,7 @@ class _DeviceDataViewState extends State<DeviceDataView> {
                             repeat: true,
                           ),
                         )..show();
-                      }
+                      }*/
                     },
                   ),
                 ),

@@ -56,18 +56,18 @@ class _SeriesDetailsViewState extends State<SeriesDetailsView> {
     final cubit = SeriesCubit.get(context);
     bool isFavorite = cubit.isSeriesFavorite(widget.series.toMap());
     int episodeCount = widget.series.episodes.isNotEmpty ? widget.series.episodes.length : 1;  // Handle the case if episodes list is empty
-  print('here ${cubit.alleposids.length}');
+    //print('here ${cubit.alleposids.length}');
 
 
 
     return SafeArea(
       child: BlocBuilder<SeriesCubit, SeriesState>(
         builder: (context, state) {
-          final groupedEpisodes = groupEpisodesBySeason(widget.series.episodes);
+         /* final groupedEpisodes = groupEpisodesBySeason(widget.series.episodes);
           final season1Episodes = groupedEpisodes['1'] ?? []; // الحصول على الحلقات الخاصة بالموسم الأول
           //final selectedSeasonEpisodes = groupedEpisodes[selectedSeason] ?? [];
           print('Season 1 episodes: $season1Episodes');
-          print('Episodes: ${widget.series.episodes}');
+          print('Episodes: ${widget.series.episodes}');*/
 
 
 
@@ -125,20 +125,24 @@ class _SeriesDetailsViewState extends State<SeriesDetailsView> {
                                           style: const TextStyle(color: Colors.white),
 
                                           value: cubit.selectedSeason.isEmpty && cubit.groupedEpisodes.isNotEmpty
-                                              ? cubit.groupedEpisodes.keys.first
-                                              : cubit.selectedSeason,
+                                              ? cubit.groupedEpisodes.keys.first.toString()
+                                              : cubit.selectedSeason.isNotEmpty
+                                              ? cubit.selectedSeason
+                                              : '',
 
                                           items: cubit.groupedEpisodes.keys.map((season) {
+                                            final seasonStr = season.toString();
                                             return DropdownMenuItem<String>(
-                                              value: season,
-                                              child: Text('Season $season'),
+                                              value: seasonStr,
+                                              child: Text('Season $seasonStr'),
                                             );
                                           }).toList(),
+
 
                                           onChanged: (String? newValue) {
                                             if (newValue != null) {
                                               cubit.changeSeason(newValue);
-                                              setState(() {});  // تحديث واجهة المستخدم
+                                              setState(() {});  // Refresh the UI
                                             }
                                           },
                                         ),
@@ -484,7 +488,7 @@ class _SeriesDetailsViewState extends State<SeriesDetailsView> {
     );
   }
 
-  Map<String, List<Episode>> groupEpisodesBySeason(List<Episode> episodes) {
+ /* Map<String, List<Episode>> groupEpisodesBySeason(List<Episode> episodes) {
     final Map<String, List<Episode>> episodesBySeason = {};
 
     for (final episode in episodes) {
@@ -498,6 +502,6 @@ class _SeriesDetailsViewState extends State<SeriesDetailsView> {
     }
 
     return episodesBySeason;
-  }
+  }*/
 
 }

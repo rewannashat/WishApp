@@ -34,7 +34,8 @@ class MovieDetailScreen extends StatefulWidget {
   final int index;
 
 
-  const MovieDetailScreen({super.key, required this.movieDetail , required this.index});
+  const MovieDetailScreen(
+      {super.key, required this.movieDetail, required this.index});
 
   @override
   State<MovieDetailScreen> createState() => _MovieDetailScreenState();
@@ -46,26 +47,29 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   void initState() {
     super.initState();
 
+
+    print('the model ==> ${widget.movieDetail.plot}');
+
     final castNames = widget.movieDetail.cast
         .split(',')
         .map((e) => e.trim())
         .take(4)
         .toList();
     context.read<MovieCubit>().loadCastData(castNames);
-  }
 
+    context.read<MovieCubit>().fetchMovieDetails(widget.movieDetail.streamId.toString());
+
+
+  }
 
 
   @override
   Widget build(BuildContext context) {
     // log('Movie details for: ${movieDetail.name}');
 
-    void fetchDetails(String movieId) {
-      context.read<MovieCubit>().fetchMovieDetails(movieId);
-    }
 
     MovieCubit cubit = MovieCubit.get(context);
-    bool isFavorite = MovieCubit.get(context).isFavorite(widget.index);
+    bool isFavorite = cubit.isSeriesFavorite(widget.movieDetail.toMap());
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.black87,
@@ -73,23 +77,29 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white , size: 28,),
-          onPressed: () => Navigator.pop(context, {'isFav': isFavorite, 'id': widget.index}),
+          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28,),
+          onPressed: () =>
+              Navigator.pop(context, {'isFav': isFavorite, 'id': widget.index}),
         ),
         actions: [
-          BlocBuilder<MovieCubit, MovieState>(
-            builder: (context, state) {
-              final isFavorite = MovieCubit.get(context).isFavorite(widget.index);
-              return IconButton(
-                icon: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: isFavorite ? Colors.red : Colors.white,
-                  size: 28,
-                ),
-                onPressed: () {
-                  MovieCubit.get(context).toggleFavorite(widget.index);
-                },
-              );
+          IconButton(
+            icon: Icon(
+              isFavorite ? Icons.favorite : Icons.favorite_border,
+              color: isFavorite ? Colors.red : Colors.white,
+              size: 28,
+            ),
+            onPressed: () async {
+              // Toggle favorite state using Cubit
+              await cubit.toggleFavorite(widget.movieDetail.toMap());
+
+              // Manually update the favorite state and UI
+              setState(() {
+                isFavorite = !isFavorite;
+              });
+
+              // Optionally, update the UI of the current list or favorite page
+              // If you need to update other parts of the UI that depend on favorites
+              // You can emit another state or call a method to refresh the data.
             },
           ),
         ],
@@ -101,53 +111,83 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           children: [
             Stack(
               children: [
-                widget.movieDetail.backdropPath != null && widget.movieDetail.backdropPath.isNotEmpty
+                widget.movieDetail.movieImage != null &&
+                    widget.movieDetail.movieImage.isNotEmpty
                     ? Image.network(
-                  widget.movieDetail.backdropPath[0] as String,
+                  widget.movieDetail.movieImage ,
                   width: double.infinity,
                   height: 400.h,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                  const Placeholder(fallbackHeight: 400),
-                )
-                    : const Placeholder(fallbackHeight: 400), // Fallback if the list is empty or null
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(child: CircularProgressIndicator());
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                        'assets/images/Asset.png', fit: BoxFit.cover , width:300.w,height: 300.h,);
+                  },) :Center(child: Image.asset('assets/images/Asset.png', fit: BoxFit.cover,width:300.w,height: 300.h,)),
                 Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  child: Container(
-                    color: Colors.black.withOpacity(0.7),
-                    padding: const EdgeInsets.all(10.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          widget.movieDetail.name ?? 'Unknown Movie',
-                          style: getSemiBoldTextStyle(
-                            color: ColorsManager.whiteColor,
-                            fontSize: FontSize.s15.sp,
-                          ),
+                  child:  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.7),
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
                         ),
-                        SizedBox(height: 5),
-                        Text(
-                          widget.movieDetail.plot ?? 'No plot available',
-                          textDirection: TextDirection.rtl,
-                          style: getRegularTextStyle(
-                            color: ColorsManager.whiteColor,
-                            fontSize: 14,
-                          ),
-                        ),
-                        SizedBox(height: 5.h),
-                        Text(
-                          widget.movieDetail.genre ?? 'Unknown Genre',
-                          style: getRegularTextStyle(
-                            color: ColorsManager.whiteColor,
-                            fontSize: 14,
-                          ),
-                        ),
-                        SizedBox(height: 15.h),
-                        buildRatingStars(widget.movieDetail.rating),
                       ],
+                    ),
+                    child: Padding(
+                      padding: EdgeInsetsDirectional.symmetric(vertical: 10, horizontal: 10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            widget.movieDetail.name,  // Dynamically set the title
+                            style: getSemiBoldTextStyle(
+                              color: ColorsManager.whiteColor,
+                              fontSize: FontSize.s15.sp,
+                            ),
+                          ),
+                          SizedBox(height: 5.h),
+                          Text(
+                            widget.movieDetail.plot ?? 'No data available at the moment. Please try again later.',  // Dynamically set the description
+                            textDirection: TextDirection.rtl,
+                            style: getRegularTextStyle(
+                              color: ColorsManager.whiteColor,
+                              fontSize: FontSize.s12.sp,
+                            ),
+                          ),
+                          SizedBox(height: 5.h),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              ...List.generate(widget.movieDetail.genre.length, (index) {
+                                return [
+                                  Text(
+                                    widget.movieDetail.genre[index], // Display genre dynamically
+                                    style: getRegularTextStyle(
+                                      color: ColorsManager.whiteColor,
+                                      fontSize: FontSize.s12.sp,
+                                    ),
+                                  ),
+                                  if (index < widget.movieDetail.genre.length - 1) // Add "|" only between genres
+                                    SizedBox(width: 6.w),
+                                  if (index < widget.movieDetail.genre.length - 1)
+                                    Text("|", style: TextStyle(color: Colors.white70, fontSize: 14)),
+                                  SizedBox(width: 6.w),
+                                ];
+                              }).expand((x) => x), // Use .expand() to flatten the list
+                            ],
+                          ),
+                          SizedBox(height: 15.h),
+                          buildRatingStars(widget.movieDetail.rating),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -175,10 +215,12 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => MoviePlayerScreen(
-                            streamId: widget.movieDetail.streamId,
-                            extension: widget.movieDetail.containerExtension,
-                          ),
+                          builder: (_) =>
+                              MoviePlayerScreen(
+                                streamId: widget.movieDetail.streamId,
+                                extension: widget.movieDetail
+                                    .containerExtension,
+                              ),
                         ),
                       );
 
@@ -314,7 +356,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
               : AssetImage('assets/images/Asset.png'),
         ),
         SizedBox(height: 5),
-        Text(name, style: TextStyle(fontSize: 12.sp , color: Colors.white)),
+        Text(name, style: TextStyle(fontSize: 12.sp, color: Colors.white)),
       ],
     );
   }

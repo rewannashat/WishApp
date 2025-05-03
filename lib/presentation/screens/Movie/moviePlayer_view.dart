@@ -27,7 +27,6 @@ class _MoviePlayerScreenState extends State<MoviePlayerScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Now you can safely access BlocProvider and other dependencies
     final movieCubit = BlocProvider.of<MovieCubit>(context);
   }
 
@@ -59,6 +58,10 @@ class _MoviePlayerScreenState extends State<MoviePlayerScreen> {
                   child: IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () {
+                      // Pause or dispose the video when the back button is pressed
+                      state.chewieController.pause(); // Pause the video
+                      // Alternatively, use dispose to completely stop the video:
+                      // state.chewieController.dispose();
                       Navigator.pop(context); // Navigate back to the previous screen
                     },
                   ),
@@ -84,18 +87,6 @@ class _MoviePlayerScreenState extends State<MoviePlayerScreen> {
       ),
     );
   }
-
-/*
-  @override
-  void dispose() {
-    // Check if the widget is still mounted
-    if (mounted) {
-      MovieCubit.get(context).disposePlayer();
-    }
-    super.dispose();
-  }
-*/
-
 
 
 }
